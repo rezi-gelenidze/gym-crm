@@ -38,18 +38,18 @@ public class UserDao {
     }
 
     // utility methods
-    private Long generateUserId() {
+    protected Long generateUserId() {
         // increment userId by 1 for each new user
         return this.userIdGenerator.getAndIncrement();
     }
 
-    private boolean isUsernameTaken(String username) {
+    protected boolean isUsernameTaken(String username) {
         // checks if username is taken in either Trainer or Trainee storage
         return this.traineeStorage.values().stream().anyMatch(t -> t.getUser().getUsername().equals(username)) ||
                 this.trainerStorage.values().stream().anyMatch(t -> t.getUser().getUsername().equals(username));
     }
 
-    private String generateUsername(String firstName, String lastName) {
+    protected String generateUsername(String firstName, String lastName) {
         // generate username based on first and last name + number if username is taken
         String base = firstName + "." + lastName;
         String username = base;
@@ -63,7 +63,7 @@ public class UserDao {
         return username;
     }
 
-    private String generatePassword() {
+    protected String generatePassword() {
         // generate random password of length 10 with alphanumeric and special characters
         String allowedChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()-_=+<>?";
 
