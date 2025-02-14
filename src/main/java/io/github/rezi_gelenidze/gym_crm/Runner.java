@@ -1,4 +1,4 @@
-package io.github.rezi_gelenidze.gym_crm.runner;
+package io.github.rezi_gelenidze.gym_crm;
 
 import io.github.rezi_gelenidze.gym_crm.entity.Trainee;
 import io.github.rezi_gelenidze.gym_crm.facade.GymFacade;
@@ -10,7 +10,7 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import java.util.Optional;
 
 
-public class MainApp {
+public class Runner {
     public static void main(String[] args) {
         // Initialize Spring context using AppConfig to scan for beans
         ApplicationContext context = new AnnotationConfigApplicationContext(AppConfig.class);
