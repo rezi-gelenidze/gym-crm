@@ -13,9 +13,13 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Component
 public class GymFacade {
+    private static final Logger logger = LoggerFactory.getLogger(GymFacade.class);
+
     private final TraineeService traineeService;
     private final TrainerService trainerService;
     private final TrainingService trainingService;
@@ -27,42 +31,87 @@ public class GymFacade {
         this.trainingService = trainingService;
     }
 
-    // Wrap Trainee Service methods
     public Trainee createTrainee(String firstName, String lastName, String dateOfBirth, String address) {
-        return traineeService.createTrainee(firstName, lastName, dateOfBirth, address);
+        logger.info("Attempting to register new trainee: {} {}", firstName, lastName);
+        Trainee trainee = traineeService.createTrainee(firstName, lastName, dateOfBirth, address);
+        logger.info("Trainee registered successfully: Username={}, ID={}", trainee.getUser().getUsername(), trainee.getUser().getUserId());
+        return trainee;
     }
 
     public Optional<Trainee> getTrainee(Long userId) {
-        return traineeService.getTrainee(userId);
+        logger.info("Fetching trainee with ID={}", userId);
+        Optional<Trainee> trainee = traineeService.getTrainee(userId);
+        if (trainee.isPresent()) {
+            logger.info("Trainee found: Username={}", trainee.get().getUser().getUsername());
+        } else {
+            logger.warn("No trainee found with ID={}", userId);
+        }
+        return trainee;
     }
 
     public boolean deleteTrainee(Long userId) {
-        return traineeService.deleteTrainee(userId);
+        logger.info("Attempting to delete trainee with ID={}", userId);
+        boolean deleted = traineeService.deleteTrainee(userId);
+        if (deleted) {
+            logger.info("Trainee with ID={} successfully deleted", userId);
+        } else {
+            logger.warn("Failed to delete trainee with ID={}", userId);
+        }
+        return deleted;
     }
 
     public Trainee updateTrainee(Trainee trainee) {
-        return traineeService.updateTrainee(trainee);
+        logger.info("Updating trainee: ID={}, Username={}", trainee.getUser().getUserId(), trainee.getUser().getUsername());
+        Trainee updatedTrainee = traineeService.updateTrainee(trainee);
+        logger.info("Trainee updated successfully: ID={}, New Address={}", updatedTrainee.getUser().getUserId(), updatedTrainee.getAddress());
+        return updatedTrainee;
     }
 
-    // Wrap Trainer Service methods
     public Trainer createTrainer(String firstName, String lastName, String specialization) {
-        return trainerService.createTrainer(firstName, lastName, specialization);
+        logger.info("Attempting to register new trainer: {} {}", firstName, lastName);
+        Trainer trainer = trainerService.createTrainer(firstName, lastName, specialization);
+        logger.info("Trainer registered successfully: Username={}, ID={}, Specialization={}",
+                trainer.getUser().getUsername(), trainer.getUser().getUserId(), specialization);
+        return trainer;
     }
 
     public Optional<Trainer> getTrainer(Long userId) {
-        return trainerService.getTrainer(userId);
+        logger.info("Fetching trainer with ID={}", userId);
+        Optional<Trainer> trainer = trainerService.getTrainer(userId);
+        if (trainer.isPresent()) {
+            logger.info("Trainer found: Username={}", trainer.get().getUser().getUsername());
+        } else {
+            logger.warn("No trainer found with ID={}", userId);
+        }
+        return trainer;
     }
 
-    public Trainer updateTrainer(Trainer Trainer) {
-        return trainerService.updateTrainer(Trainer);
+    public Trainer updateTrainer(Trainer trainer) {
+        logger.info("Updating trainer: ID={}, Username={}", trainer.getUser().getUserId(), trainer.getUser().getUsername());
+        Trainer updatedTrainer = trainerService.updateTrainer(trainer);
+        logger.info("Trainer updated successfully: ID={}, New Specialization={}",
+                updatedTrainer.getUser().getUserId(), updatedTrainer.getSpecialization());
+        return updatedTrainer;
     }
 
-    // Wrap Training Service methods
     public Training createTraining(Long traineeId, Long trainerId, String trainingName, TrainingType trainingTypeName, String trainingDate, Duration trainingDuration) {
-        return trainingService.createTraining(traineeId, trainerId, trainingName, trainingTypeName, trainingDate, trainingDuration);
+        logger.info("Scheduling training: Name={}, Type={}, Duration={} mins, TraineeID={}, TrainerID={}",
+                trainingName, trainingTypeName.getTrainingTypeName(), trainingDuration.toMinutes(), traineeId, trainerId);
+        Training training = trainingService.createTraining(traineeId, trainerId, trainingName, trainingTypeName, trainingDate, trainingDuration);
+        logger.info("Training successfully scheduled: Name={}, Date={}, Duration={} mins",
+                training.getTrainingTypeName().getTrainingTypeName(), training.getTrainingDate(), training.getTrainingDuration().toMinutes());
+        return training;
     }
 
     public Optional<Training> getTraining(Long traineeId, Long trainerId) {
-        return trainingService.getTraining(traineeId, trainerId);
+        logger.info("Fetching training session: TraineeID={}, TrainerID={}", traineeId, trainerId);
+        Optional<Training> training = trainingService.getTraining(traineeId, trainerId);
+        if (training.isPresent()) {
+            logger.info("Training session found: Type={}, Date={}, Duration={} mins",
+                    training.get().getTrainingTypeName().getTrainingTypeName(), training.get().getTrainingDate(), training.get().getTrainingDuration().toMinutes());
+        } else {
+            logger.warn("No training session found for TraineeID={} and TrainerID={}", traineeId, trainerId);
+        }
+        return training;
     }
 }

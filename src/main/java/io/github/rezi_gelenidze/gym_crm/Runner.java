@@ -21,16 +21,7 @@ public class Runner {
         // Create trainee
         Trainee trainee = gymFacade.createTrainee("John", "Doe", "1990-01-01", "Tbilisi, Georgia");
 
-        System.out.println("Trainee created: " + trainee.getUser().getUsername());
-
         // Search for trainee
-        Optional<Trainee> foundTrainee = gymFacade.getTrainee(trainee.getUser().getUserId());
-
-        // Print the found trainee
-        if (foundTrainee.isEmpty()) {
-            System.out.println("Trainee not found");
-        } else {
-            System.out.println("Trainee found: " + foundTrainee.get().getUser().getUsername());
-        }
+        gymFacade.getTrainee(trainee.getUser().getUserId());
     }
 }
