@@ -48,8 +48,8 @@ public class StorageSeed {
             // Load trainees
             for (Trainee trainee : seedData.getTrainees()) {
                 Trainee createdTrainee = traineeService.createTrainee(
-                        trainee.getFirstName(),
-                        trainee.getLastName(),
+                        trainee.getUser().getFirstName(),
+                        trainee.getUser().getLastName(),
                         trainee.getDateOfBirth(),
                         trainee.getAddress()
                 );
@@ -59,8 +59,8 @@ public class StorageSeed {
             // Load trainers
             for (Trainer trainer : seedData.getTrainers()) {
                 Trainer createdTrainer = trainerService.createTrainer(
-                        trainer.getFirstName(),
-                        trainer.getLastName(),
+                        trainer.getUser().getFirstName(),
+                        trainer.getUser().getLastName(),
                         trainer.getSpecialization()
                 );
                 logger.info("Seeded Trainer: " + createdTrainer.getUser().getUsername());

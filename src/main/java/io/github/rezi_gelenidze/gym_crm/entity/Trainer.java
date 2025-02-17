@@ -10,7 +10,7 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class Trainer extends User {
+public class Trainer {
     private User user;
     private String specialization;
 }

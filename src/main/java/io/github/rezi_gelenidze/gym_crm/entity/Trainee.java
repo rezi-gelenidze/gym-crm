@@ -10,7 +10,7 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class Trainee extends User {
+public class Trainee {
     private User user;
     private String dateOfBirth;
     private String address;

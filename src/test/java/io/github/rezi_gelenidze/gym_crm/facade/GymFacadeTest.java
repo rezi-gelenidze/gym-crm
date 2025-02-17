@@ -75,8 +75,8 @@ class GymFacadeTest {
         TrainingType trainingType = new TrainingType("Strength Training");
 
         Training training = gymFacade.createTraining(
-                trainee.getUserId(),
-                trainer.getUserId(),
+                trainee.getUser().getUserId(),
+                trainer.getUser().getUserId(),
                 "Strength Training",
                 trainingType,
                 "2025-02-15",
