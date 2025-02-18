@@ -20,7 +20,9 @@ public class TrainingService {
     }
 
     public Training createTraining(Long traineeId, Long trainerId, String trainingName, TrainingType trainingTypeName, String trainingDate, Duration trainingDuration) {
-        return trainingDao.createTraining(traineeId, trainerId, trainingName, trainingTypeName, trainingDate, trainingDuration);
+        Training training = new Training(traineeId, trainerId, trainingName, trainingTypeName, trainingDate, trainingDuration);
+
+        return trainingDao.saveTraining(training);
     }
 
     public Optional<Training> getTraining(Long traineeId, Long trainerId) {

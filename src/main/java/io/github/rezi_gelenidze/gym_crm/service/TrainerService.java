@@ -9,15 +9,27 @@ import java.util.Optional;
 
 @Service
 public class TrainerService {
+    private final UserService userService;
     private final TrainerDao trainerDao;
 
     @Autowired
-    public TrainerService(TrainerDao trainerDao) {
+    public TrainerService(UserService userService, TrainerDao trainerDao) {
+        this.userService = userService;
         this.trainerDao = trainerDao;
     }
 
     public Trainer createTrainer(String firstName, String lastName, String specialization) {
-        return trainerDao.createTrainer(firstName, lastName, specialization);
+        Trainer trainer = new Trainer();
+        trainer.setSpecialization(specialization);
+
+        // User base fields
+        trainer.setUserId(userService.generateTrainerId());
+        trainer.setFirstName(firstName);
+        trainer.setLastName(lastName);
+        trainer.setUsername(userService.generateUsername(firstName, lastName));
+        trainer.setPassword(userService.generatePassword());
+
+        return trainerDao.saveTrainer(trainer);
     }
 
     public Optional<Trainer> getTrainer(Long userId) {
