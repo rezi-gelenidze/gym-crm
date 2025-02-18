@@ -22,6 +22,6 @@ public class Runner {
         Trainee trainee = gymFacade.createTrainee("John", "Doe", "1990-01-01", "Tbilisi, Georgia");
 
         // Search for trainee
-        gymFacade.getTrainee(trainee.getUser().getUserId());
+        gymFacade.getTrainee(trainee.getUserId());
     }
 }

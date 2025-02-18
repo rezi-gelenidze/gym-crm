@@ -34,7 +34,7 @@ public class GymFacade {
     public Trainee createTrainee(String firstName, String lastName, String dateOfBirth, String address) {
         logger.info("Attempting to register new trainee: {} {}", firstName, lastName);
         Trainee trainee = traineeService.createTrainee(firstName, lastName, dateOfBirth, address);
-        logger.info("Trainee registered successfully: Username={}, ID={}", trainee.getUser().getUsername(), trainee.getUser().getUserId());
+        logger.info("Trainee registered successfully: Username={}, ID={}", trainee.getUsername(), trainee.getUserId());
         return trainee;
     }
 
@@ -42,7 +42,7 @@ public class GymFacade {
         logger.info("Fetching trainee with ID={}", userId);
         Optional<Trainee> trainee = traineeService.getTrainee(userId);
         if (trainee.isPresent()) {
-            logger.info("Trainee found: Username={}", trainee.get().getUser().getUsername());
+            logger.info("Trainee found: Username={}", trainee.get().getUsername());
         } else {
             logger.warn("No trainee found with ID={}", userId);
         }
@@ -61,9 +61,9 @@ public class GymFacade {
     }
 
     public Trainee updateTrainee(Trainee trainee) {
-        logger.info("Updating trainee: ID={}, Username={}", trainee.getUser().getUserId(), trainee.getUser().getUsername());
+        logger.info("Updating trainee: ID={}, Username={}", trainee.getUserId(), trainee.getUsername());
         Trainee updatedTrainee = traineeService.updateTrainee(trainee);
-        logger.info("Trainee updated successfully: ID={}, New Address={}", updatedTrainee.getUser().getUserId(), updatedTrainee.getAddress());
+        logger.info("Trainee updated successfully: ID={}, New Address={}", updatedTrainee.getUserId(), updatedTrainee.getAddress());
         return updatedTrainee;
     }
 
@@ -71,7 +71,7 @@ public class GymFacade {
         logger.info("Attempting to register new trainer: {} {}", firstName, lastName);
         Trainer trainer = trainerService.createTrainer(firstName, lastName, specialization);
         logger.info("Trainer registered successfully: Username={}, ID={}, Specialization={}",
-                trainer.getUser().getUsername(), trainer.getUser().getUserId(), specialization);
+                trainer.getUsername(), trainer.getUserId(), specialization);
         return trainer;
     }
 
@@ -79,7 +79,7 @@ public class GymFacade {
         logger.info("Fetching trainer with ID={}", userId);
         Optional<Trainer> trainer = trainerService.getTrainer(userId);
         if (trainer.isPresent()) {
-            logger.info("Trainer found: Username={}", trainer.get().getUser().getUsername());
+            logger.info("Trainer found: Username={}", trainer.get().getUsername());
         } else {
             logger.warn("No trainer found with ID={}", userId);
         }
@@ -87,10 +87,10 @@ public class GymFacade {
     }
 
     public Trainer updateTrainer(Trainer trainer) {
-        logger.info("Updating trainer: ID={}, Username={}", trainer.getUser().getUserId(), trainer.getUser().getUsername());
+        logger.info("Updating trainer: ID={}, Username={}", trainer.getUserId(), trainer.getUsername());
         Trainer updatedTrainer = trainerService.updateTrainer(trainer);
         logger.info("Trainer updated successfully: ID={}, New Specialization={}",
-                updatedTrainer.getUser().getUserId(), updatedTrainer.getSpecialization());
+                updatedTrainer.getUserId(), updatedTrainer.getSpecialization());
         return updatedTrainer;
     }
 

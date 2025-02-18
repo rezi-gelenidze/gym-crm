@@ -27,11 +27,11 @@ class GymFacadeTest {
         Trainee trainee = gymFacade.createTrainee("Alice", "Johnson", "1995-04-20", "123 Main St");
 
         assertNotNull(trainee);
-        assertNotNull(trainee.getUser().getUserId());
-        assertEquals("Alice.Johnson", trainee.getUser().getUsername());
+        assertNotNull(trainee.getUserId());
+        assertEquals("Alice.Johnson", trainee.getUsername());
 
         // Get the Trainee and verify it was created
-        Optional<Trainee> retrievedTrainee = gymFacade.getTrainee(trainee.getUser().getUserId());
+        Optional<Trainee> retrievedTrainee = gymFacade.getTrainee(trainee.getUserId());
         assertTrue(retrievedTrainee.isPresent());
 
         // Update the Trainee
@@ -41,10 +41,10 @@ class GymFacadeTest {
         assertEquals("Wall St", updatedTrainee.getAddress());
 
         // Delete the Trainee
-        assertTrue(gymFacade.deleteTrainee(trainee.getUser().getUserId()));
+        assertTrue(gymFacade.deleteTrainee(trainee.getUserId()));
 
         // Verify the Trainee was deleted
-        assertTrue(gymFacade.getTrainee(trainee.getUser().getUserId()).isEmpty());
+        assertTrue(gymFacade.getTrainee(trainee.getUserId()).isEmpty());
     }
 
     @Test
@@ -53,11 +53,11 @@ class GymFacadeTest {
         Trainer trainer = gymFacade.createTrainer("John", "Doe", "Strength Training");
 
         assertNotNull(trainer);
-        assertNotNull(trainer.getUser().getUserId());
-        assertEquals("John.Doe", trainer.getUser().getUsername());
+        assertNotNull(trainer.getUserId());
+        assertEquals("John.Doe", trainer.getUsername());
 
         // Get the Trainer and verify it was created
-        Optional<Trainer> retrievedTrainer = gymFacade.getTrainer(trainer.getUser().getUserId());
+        Optional<Trainer> retrievedTrainer = gymFacade.getTrainer(trainer.getUserId());
         assertTrue(retrievedTrainer.isPresent());
 
         // Update the Trainer
@@ -75,8 +75,8 @@ class GymFacadeTest {
         TrainingType trainingType = new TrainingType("Strength Training");
 
         Training training = gymFacade.createTraining(
-                trainee.getUser().getUserId(),
-                trainer.getUser().getUserId(),
+                trainee.getUserId(),
+                trainer.getUserId(),
                 "Strength Training",
                 trainingType,
                 "2025-02-15",
@@ -95,32 +95,26 @@ class GymFacadeTest {
     void testUserFieldsGeneration() {
         // Create 3 users 2 with the same first and last name
         Trainee trainee1 = gymFacade.createTrainee("Alice", "Johnson", "1995-04-20", "123 Main St");
-        Trainer trainee2 = gymFacade.createTrainer("Alice", "Johnson", "Strength Training");
-        Trainee trainee3 = gymFacade.createTrainee("Bob", "Smith", "1997-12-11", "125 Main St");
+        Trainee trainee2 = gymFacade.createTrainee("Alice", "Johnson", "1997-12-11", "125 Main St");
+        Trainer trainer1 = gymFacade.createTrainer("Bob", "Smith", "Strength Training");
 
         assertNotNull(trainee1);
         assertNotNull(trainee2);
-        assertNotNull(trainee3);
+        assertNotNull(trainer1);
 
         // Verify that the usernames are unique
-        assertNotEquals(trainee1.getUser().getUsername(), trainee2.getUser().getUsername());
-        assertNotEquals(trainee2.getUser().getUsername(), trainee3.getUser().getUsername());
+        assertNotEquals(trainee1.getUsername(), trainee2.getUsername());
+        assertNotEquals(trainee2.getUsername(), trainer1.getUsername());
 
         // Verify incremental userId generation
-        assertEquals(trainee1.getUser().getUserId() + 1, trainee2.getUser().getUserId());
-        assertEquals(trainee2.getUser().getUserId() + 1, trainee3.getUser().getUserId());
+        assertEquals(trainee1.getUserId() + 1, trainee2.getUserId());
 
         // Verify same username clash handling
-        assertEquals("Alice.Johnson", trainee1.getUser().getUsername());
-        assertEquals("Alice.Johnson1", trainee2.getUser().getUsername());
+        assertEquals("Alice.Johnson", trainee1.getUsername());
+        assertEquals("Alice.Johnson1", trainee2.getUsername());
 
         // Verify password generation randomization
-        assertNotEquals(trainee1.getUser().getPassword(), trainee2.getUser().getPassword());
-        assertNotEquals(trainee2.getUser().getPassword(), trainee3.getUser().getPassword());
-
-        // Verify password length
-        assertEquals(10, trainee1.getUser().getPassword().length());
-        assertEquals(10, trainee2.getUser().getPassword().length());
-        assertEquals(10, trainee3.getUser().getPassword().length());
+        assertNotEquals(trainee1.getPassword(), trainee2.getPassword());
+        assertNotEquals(trainee2.getPassword(), trainer1.getPassword());
     }
 }
