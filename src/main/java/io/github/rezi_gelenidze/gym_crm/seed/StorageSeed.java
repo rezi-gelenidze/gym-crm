@@ -1,4 +1,4 @@
-package io.github.rezi_gelenidze.gym_crm.config;
+package io.github.rezi_gelenidze.gym_crm.seed;
 
 import io.github.rezi_gelenidze.gym_crm.entity.*;
 import io.github.rezi_gelenidze.gym_crm.service.*;
