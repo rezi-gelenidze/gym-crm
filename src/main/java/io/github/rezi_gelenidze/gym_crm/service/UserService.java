@@ -32,20 +32,20 @@ public class UserService {
     }
 
     // utility methods
-    protected long generateTraineeId() {
+    public long generateTraineeId() {
         return this.traineeIdCounter.getAndIncrement();
     }
 
-    protected long generateTrainerId() {
+    public long generateTrainerId() {
         return this.trainerIdCounter.getAndIncrement();
     }
 
-    protected boolean isUsernameTaken(String username) {
+    public boolean isUsernameTaken(String username) {
         // checks if username is taken in either Trainer or Trainee storage
         return this.traineeStorage.values().stream().anyMatch(t -> t.getUsername().equals(username)) || this.trainerStorage.values().stream().anyMatch(t -> t.getUsername().equals(username));
     }
 
-    protected String generateUsername(String firstName, String lastName) {
+    public String generateUsername(String firstName, String lastName) {
         // generate username based on first and last name + number if username is taken
         String base = firstName + "." + lastName;
         String username = base;
@@ -59,7 +59,7 @@ public class UserService {
         return username;
     }
 
-    protected String generatePassword() {
+    public String generatePassword() {
         // characters allowed in password
         String allowedChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()-_=+<>?";
 
