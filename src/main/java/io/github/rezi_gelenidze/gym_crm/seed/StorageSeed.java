@@ -4,12 +4,12 @@ import io.github.rezi_gelenidze.gym_crm.entity.*;
 import io.github.rezi_gelenidze.gym_crm.service.*;
 
 import jakarta.annotation.PostConstruct;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -17,12 +17,10 @@ import java.io.File;
 import java.io.IOException;
 import java.time.Duration;
 import java.util.List;
-import java.util.logging.Logger;
 
+@Slf4j
 @Component
 public class StorageSeed {
-    private static final Logger logger = Logger.getLogger(StorageSeed.class.getName());
-
     private final TraineeService traineeService;
     private final TrainerService trainerService;
     private final TrainingService trainingService;
@@ -39,7 +37,7 @@ public class StorageSeed {
 
     @PostConstruct
     public void seedDatabase() {
-        logger.info("Seeding database from file: " + seedFilePath);
+        log.info("Seeding database from file: {}", seedFilePath);
 
         try {
             ObjectMapper objectMapper = new ObjectMapper();
@@ -53,7 +51,7 @@ public class StorageSeed {
                         trainee.getDateOfBirth(),
                         trainee.getAddress()
                 );
-                logger.info("Seeded Trainee: " + createdTrainee.getUsername());
+                log.info("Seeded Trainee: Username={}, ID={}", createdTrainee.getUsername(), createdTrainee.getUserId());
             }
 
             // Load trainers
@@ -63,7 +61,7 @@ public class StorageSeed {
                         trainer.getLastName(),
                         trainer.getSpecialization()
                 );
-                logger.info("Seeded Trainer: " + createdTrainer.getUsername());
+                log.info("Seeded Trainer: Username={}, ID={}", createdTrainer.getUsername(), createdTrainer.getUserId());
             }
 
             // Load trainings
@@ -77,12 +75,14 @@ public class StorageSeed {
                         training.getTrainingDate(),
                         Duration.ofMinutes(training.getTrainingDurationMinutes())
                 );
-                logger.info("Seeded Training: " + createdTraining.getTrainingTypeName().getTrainingTypeName());
+                log.info("Seeded Training: Name={}, Type={}, TraineeID={}, TrainerID={}",
+                        createdTraining.getTrainingName(), createdTraining.getTrainingTypeName().getTrainingTypeName(),
+                        createdTraining.getTraineeId(), createdTraining.getTrainerId());
             }
 
-            logger.info("Seeding completed successfully!");
+            log.info("Seeding completed successfully!");
         } catch (IOException e) {
-            logger.severe("Error reading seeding file: " + e.getMessage());
+            log.error("Error reading seeding file: {}", e.getMessage(), e);
         }
     }
 

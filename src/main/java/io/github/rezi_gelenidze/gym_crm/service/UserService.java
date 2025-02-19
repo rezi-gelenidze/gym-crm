@@ -6,11 +6,12 @@ import java.security.SecureRandom;
 
 import io.github.rezi_gelenidze.gym_crm.entity.Trainee;
 import io.github.rezi_gelenidze.gym_crm.entity.Trainer;
-
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 public class UserService {
     private PasswordEncoder passwordEncoder;
@@ -40,22 +41,28 @@ public class UserService {
         this.traineeStorage = traineeStorage;
     }
 
-    // utility methods
+    // Utility methods
     public long generateTraineeId() {
-        return this.traineeIdCounter.getAndIncrement();
+        long id = this.traineeIdCounter.getAndIncrement();
+        log.info("Generated new Trainee ID: {}", id);
+        return id;
     }
 
     public long generateTrainerId() {
-        return this.trainerIdCounter.getAndIncrement();
+        long id = this.trainerIdCounter.getAndIncrement();
+        log.info("Generated new Trainer ID: {}", id);
+        return id;
     }
 
     public boolean isUsernameTaken(String username) {
-        // checks if username is taken in either Trainer or Trainee storage
-        return this.traineeStorage.values().stream().anyMatch(t -> t.getUsername().equals(username)) || this.trainerStorage.values().stream().anyMatch(t -> t.getUsername().equals(username));
+        boolean taken = this.traineeStorage.values().stream().anyMatch(t -> t.getUsername().equals(username))
+                || this.trainerStorage.values().stream().anyMatch(t -> t.getUsername().equals(username));
+
+        log.debug("Checked if username '{}' is taken: {}", username, taken);
+        return taken;
     }
 
     public String generateUsername(String firstName, String lastName) {
-        // generate username based on first and last name + number if username is taken
         String base = firstName + "." + lastName;
         String username = base;
         int counter = 1;
@@ -65,19 +72,20 @@ public class UserService {
             counter++;
         }
 
+        log.info("Generated unique username: {}", username);
         return username;
     }
 
     public String generatePassword() {
-        // characters allowed in password
         String allowedChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()-_=+<>?";
 
-        // generate random password of length 10
         String rawPassword = this.random.ints(10, 0, allowedChars.length())
-                .mapToObj(allowedChars::charAt) // Convert indices to characters
+                .mapToObj(allowedChars::charAt)
                 .collect(StringBuilder::new, StringBuilder::append, StringBuilder::append).toString();
 
-        // encode password and return hashed password
-        return passwordEncoder.encode(rawPassword);
+        String hashedPassword = passwordEncoder.encode(rawPassword);
+        log.info("Generated and encoded password for new user");
+
+        return hashedPassword;
     }
 }
