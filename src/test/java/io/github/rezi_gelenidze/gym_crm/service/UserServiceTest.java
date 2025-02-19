@@ -1,4 +1,4 @@
-package io.github.rezi_gelenidze.gym_crm.facade.service;
+package io.github.rezi_gelenidze.gym_crm.service;
 
 import io.github.rezi_gelenidze.gym_crm.entity.Trainee;
 import io.github.rezi_gelenidze.gym_crm.entity.Trainer;

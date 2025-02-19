@@ -1,4 +1,4 @@
-package io.github.rezi_gelenidze.gym_crm.facade.dao;
+package io.github.rezi_gelenidze.gym_crm.dao;
 
 import io.github.rezi_gelenidze.gym_crm.dao.TrainingDao;
 import io.github.rezi_gelenidze.gym_crm.entity.Training;
