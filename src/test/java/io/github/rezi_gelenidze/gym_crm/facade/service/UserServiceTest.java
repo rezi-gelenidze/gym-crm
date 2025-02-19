@@ -32,9 +32,13 @@ class UserServiceTest {
         // Initialize mocks
         MockitoAnnotations.openMocks(this);
 
-        trainerStorage = new ConcurrentHashMap<>();
-        traineeStorage = new ConcurrentHashMap<>();
-        userService = new UserService(trainerStorage, traineeStorage, passwordEncoder);
+        this.trainerStorage = new ConcurrentHashMap<>();
+        this.traineeStorage = new ConcurrentHashMap<>();
+
+        userService = new UserService();
+        userService.setTrainerStorage(trainerStorage);
+        userService.setTraineeStorage(traineeStorage);
+        userService.setPasswordEncoder(passwordEncoder);
     }
 
     @Test

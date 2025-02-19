@@ -9,12 +9,17 @@ import java.util.Optional;
 
 @Service
 public class TraineeService {
-    private final UserService userService;
-    private final TraineeDao traineeDao;
+    private UserService userService;
+    private TraineeDao traineeDao;
+
+    // Setter injections (according to task requirements)
+    @Autowired
+    public void setUserService(UserService userService) {
+        this.userService = userService;
+    }
 
     @Autowired
-    public TraineeService(UserService userService, TraineeDao traineeDao) {
-        this.userService = userService;
+    public void setTraineeDao(TraineeDao traineeDao) {
         this.traineeDao = traineeDao;
     }
 

@@ -24,6 +24,7 @@ public class GymFacade {
     private final TrainerService trainerService;
     private final TrainingService trainingService;
 
+    // Constructor injection only in facade (according to task requirements)
     @Autowired
     public GymFacade(TraineeService traineeService, TrainerService trainerService, TrainingService trainingService) {
         this.traineeService = traineeService;

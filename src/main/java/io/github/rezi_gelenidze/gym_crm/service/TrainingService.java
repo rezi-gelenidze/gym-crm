@@ -12,10 +12,11 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class TrainingService {
-    private final TrainingDao trainingDao;
+    private TrainingDao trainingDao;
 
+    // Setter injections (according to task requirements)
     @Autowired
-    public TrainingService(TrainingDao trainingDao) {
+    public void setTrainingDao(TrainingDao trainingDao) {
         this.trainingDao = trainingDao;
     }
 

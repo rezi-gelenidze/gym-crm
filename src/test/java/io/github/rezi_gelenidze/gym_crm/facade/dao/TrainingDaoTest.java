@@ -18,7 +18,8 @@ public class TrainingDaoTest {
     @BeforeEach
     public void setUp() {
         // Manually injecting a ConcurrentHashMap to the TrainingDao
-        this.trainingDao = new TrainingDao(new ConcurrentHashMap<>());
+        this.trainingDao = new TrainingDao();
+        this.trainingDao.setTrainingStorage(new ConcurrentHashMap<>());
     }
 
     // Helper method to create a Training object

@@ -10,10 +10,11 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public class TrainingDao {
-    private final Map<String, Training> trainingStorage;
+    private Map<String, Training> trainingStorage;
 
+    // Setter injection for trainingStorage (according to task requirements)
     @Autowired
-    public TrainingDao(Map<String, Training> trainingStorage) {
+    public void setTrainingStorage(Map<String, Training> trainingStorage) {
         this.trainingStorage = trainingStorage;
     }
 

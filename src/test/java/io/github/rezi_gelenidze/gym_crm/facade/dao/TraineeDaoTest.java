@@ -17,7 +17,8 @@ public class TraineeDaoTest {
     @BeforeEach
     public void setUp() {
         // Manually injecting a ConcurrentHashMap to the TrainerDao
-        this.traineeDao = new TraineeDao(new ConcurrentHashMap<>());
+        this.traineeDao = new TraineeDao();
+        this.traineeDao.setTraineeStorage(new ConcurrentHashMap<>());
     }
 
     // Helper method to create a Trainee object

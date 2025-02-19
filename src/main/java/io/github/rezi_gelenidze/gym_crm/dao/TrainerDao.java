@@ -16,10 +16,11 @@ import org.springframework.stereotype.Repository;
 @Repository
 public class TrainerDao {
 
-    private final Map<Long, Trainer> trainerStorage;
+    private Map<Long, Trainer> trainerStorage;
 
+    // Setter injection for trainerStorage (according to task requirements)
     @Autowired
-    public TrainerDao(Map<Long, Trainer> trainerStorage) {
+    public void setTrainerStorage(Map<Long, Trainer> trainerStorage) {
         this.trainerStorage = trainerStorage;
     }
 

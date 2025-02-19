@@ -13,10 +13,10 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class UserService {
-    PasswordEncoder passwordEncoder;
+    private PasswordEncoder passwordEncoder;
 
-    private final Map<Long, Trainer> trainerStorage;
-    private final Map<Long, Trainee> traineeStorage;
+    private Map<Long, Trainer> trainerStorage;
+    private Map<Long, Trainee> traineeStorage;
 
     // Class level attributes for generation
     private final AtomicLong traineeIdCounter = new AtomicLong(1);
@@ -24,11 +24,20 @@ public class UserService {
 
     private final SecureRandom random = new SecureRandom();
 
+    // Setter injections (according to task requirements)
     @Autowired
-    public UserService(Map<Long, Trainer> trainerStorage, Map<Long, Trainee> traineeStorage, PasswordEncoder passwordEncoder) {
-        this.trainerStorage = trainerStorage;
-        this.traineeStorage = traineeStorage;
+    public void setPasswordEncoder(PasswordEncoder passwordEncoder) {
         this.passwordEncoder = passwordEncoder;
+    }
+
+    @Autowired
+    public void setTrainerStorage(Map<Long, Trainer> trainerStorage) {
+        this.trainerStorage = trainerStorage;
+    }
+
+    @Autowired
+    public void setTraineeStorage(Map<Long, Trainee> traineeStorage) {
+        this.traineeStorage = traineeStorage;
     }
 
     // utility methods
