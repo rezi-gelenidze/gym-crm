@@ -19,7 +19,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-class GymFacadeTest {
+class FacadeTest {
 
     @Mock
     private TraineeService traineeService;
