@@ -19,15 +19,14 @@ public class TrainerService {
     }
 
     public Trainer createTrainer(String firstName, String lastName, String specialization) {
-        Trainer trainer = new Trainer();
-        trainer.setSpecialization(specialization);
-
-        // User base fields
-        trainer.setUserId(userService.generateTrainerId());
-        trainer.setFirstName(firstName);
-        trainer.setLastName(lastName);
-        trainer.setUsername(userService.generateUsername(firstName, lastName));
-        trainer.setPassword(userService.generatePassword());
+        Trainer trainer = new Trainer(
+                userService.generateTrainerId(),
+                firstName,
+                lastName,
+                userService.generateUsername(firstName, lastName),
+                userService.generatePassword(),
+                specialization
+        );
 
         return trainerDao.saveTrainer(trainer);
     }

@@ -19,16 +19,15 @@ public class TraineeService {
     }
 
     public Trainee createTrainee(String firstName, String lastName, String dateOfBirth, String address) {
-        Trainee trainee = new Trainee();
-        trainee.setDateOfBirth(dateOfBirth);
-        trainee.setAddress(address);
-
-        // User base fields
-        trainee.setUserId(userService.generateTraineeId());
-        trainee.setFirstName(firstName);
-        trainee.setLastName(lastName);
-        trainee.setUsername(userService.generateUsername(firstName, lastName));
-        trainee.setPassword(userService.generatePassword());
+        Trainee trainee = new Trainee(
+                userService.generateTraineeId(),
+                firstName,
+                lastName,
+                userService.generateUsername(firstName, lastName),
+                userService.generatePassword(),
+                dateOfBirth,
+                address
+        );
 
         return traineeDao.saveTrainee(trainee);
     }
