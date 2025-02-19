@@ -11,24 +11,17 @@ import io.github.rezi_gelenidze.gym_crm.service.TrainingService;
 import java.time.Duration;
 import java.util.Optional;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Slf4j
+@RequiredArgsConstructor
 @Component
 public class GymFacade {
     private final TraineeService traineeService;
     private final TrainerService trainerService;
     private final TrainingService trainingService;
-
-    // Constructor injection only in facade (according to task requirements)
-    @Autowired
-    public GymFacade(TraineeService traineeService, TrainerService trainerService, TrainingService trainingService) {
-        this.traineeService = traineeService;
-        this.trainerService = trainerService;
-        this.trainingService = trainingService;
-    }
 
     public Trainee createTrainee(String firstName, String lastName, String dateOfBirth, String address) {
         log.info("Attempting to register new trainee: {} {}", firstName, lastName);
