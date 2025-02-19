@@ -4,7 +4,6 @@ import lombok.*;
 
 @Getter
 @Setter
-@AllArgsConstructor
 @NoArgsConstructor
 public abstract class User {
     private Long userId;
@@ -13,4 +12,13 @@ public abstract class User {
     private String username;
     private String password;
     private boolean isActive = true;
+
+    public User(Long userId, String firstName, String lastName, String username, String password, boolean isActive) {
+        this.userId = userId;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.username = username;
+        this.password = password;
+        this.isActive = isActive;
+    }
 }
