@@ -1,24 +1,31 @@
 package io.github.rezi_gelenidze.gym_crm.entity;
 
+import jakarta.persistence.*;
 import lombok.*;
 
-@Getter
-@Setter
+@Data
 @NoArgsConstructor
-public abstract class User {
+@AllArgsConstructor
+@Entity
+@Inheritance(strategy = InheritanceType.JOINED) // Ensures separate tables
+@Table(name = "users")
+public class User {
+    @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long userId;
-    private String firstName;
-    private String lastName;
-    private String username;
-    private String password;
-    private boolean isActive = true;
 
-    public User(Long userId, String firstName, String lastName, String username, String password, boolean isActive) {
-        this.userId = userId;
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.username = username;
-        this.password = password;
-        this.isActive = isActive;
-    }
+    @Column(nullable = false, length = 255)
+    private String firstName;
+
+    @Column(nullable = false, length = 50)
+    private String lastName;
+
+    @Column(unique = true, nullable = false, length = 50)
+    private String username;
+
+    @Column(nullable = false)
+    private String password;
+
+    @Column(nullable = false)
+    private boolean active;
 }

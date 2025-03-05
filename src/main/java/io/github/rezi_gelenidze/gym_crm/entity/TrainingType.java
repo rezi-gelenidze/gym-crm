@@ -1,14 +1,19 @@
 package io.github.rezi_gelenidze.gym_crm.entity;
 
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.AllArgsConstructor;
+import jakarta.persistence.*;
+import lombok.*;
 
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@Entity
+@Table(name = "training_types")
 public class TrainingType {
-        String trainingTypeName;
+    @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    private Long trainingTypeId;
+
+    @Column(nullable = false, unique = true)
+    String trainingTypeName;
 }
