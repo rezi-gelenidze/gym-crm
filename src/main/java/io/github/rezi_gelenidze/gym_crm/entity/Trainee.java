@@ -3,20 +3,29 @@ package io.github.rezi_gelenidze.gym_crm.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
-@Getter
-@Setter
+import java.time.LocalDate;
+
+@Data
 @Entity
 @NoArgsConstructor
 @Table(name = "trainees")
-public class Trainee extends User {
+public class Trainee {
+    @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    private Long traineeId;
+
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "user_id", nullable = false, unique = true)
+    private User user;
+
     @Column(nullable = false)
-    private String dateOfBirth;
+    private LocalDate dateOfBirth;
 
     @Column(nullable = false)
     private String address;
 
-    public Trainee(Long userId, String firstName, String lastName, String username, String password, boolean active, String dateOfBirth, String address) {
-        super(userId, firstName, lastName, username, password, active);
+    public Trainee(User user, LocalDate dateOfBirth, String address) {
+        this.user = user;
         this.dateOfBirth = dateOfBirth;
         this.address = address;
     }

@@ -5,7 +5,6 @@ import lombok.*;
 
 @Data
 @NoArgsConstructor
-@AllArgsConstructor
 @Entity
 @Inheritance(strategy = InheritanceType.JOINED) // Ensures separate tables
 @Table(name = "users")
@@ -28,4 +27,12 @@ public class User {
 
     @Column(nullable = false)
     private boolean active;
+
+    public User(String firstName, String lastName, String username, String password) {
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.username = username;
+        this.password = password;
+        this.active = true;
+    }
 }
