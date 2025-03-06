@@ -1,89 +1,86 @@
 package io.github.rezi_gelenidze.gym_crm.service;
 
-import io.github.rezi_gelenidze.gym_crm.dao.TraineeDao;
+import io.github.rezi_gelenidze.gym_crm.dto.TraineeDto;
+import io.github.rezi_gelenidze.gym_crm.dto.TraineeUpdateDto;
 import io.github.rezi_gelenidze.gym_crm.entity.Trainee;
+import io.github.rezi_gelenidze.gym_crm.entity.User;
+import io.github.rezi_gelenidze.gym_crm.repository.TraineeRepository;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class TraineeService {
-    private UserService userService;
-    private TraineeDao traineeDao;
+    private final UserService userService;
+    private final TraineeRepository traineeRepository;
 
-    // Setter injections (according to task requirements)
-    @Autowired
-    public void setUserService(UserService userService) {
-        this.userService = userService;
-    }
+    public Trainee createTrainee(TraineeDto traineeDto) {
+        log.info("Creating new trainee: {} {}, Date of Birth={}, Address={}",
+                traineeDto.getFirstName(), traineeDto.getLastName(), traineeDto.getDateOfBirth(), traineeDto.getAddress());
 
-    @Autowired
-    public void setTraineeDao(TraineeDao traineeDao) {
-        this.traineeDao = traineeDao;
-    }
-
-    public Trainee createTrainee(String firstName, String lastName, String dateOfBirth, String address) {
-        log.info("Creating new trainee: {} {}, Date of Birth={}, Address={}", firstName, lastName, dateOfBirth, address);
-
-        Trainee trainee = new Trainee(
-                userService.generateTraineeId(),
-                firstName,
-                lastName,
-                userService.generateUsername(firstName, lastName),
-                userService.generatePassword(),
-                dateOfBirth,
-                address
+        User newUser = new User(
+                traineeDto.getFirstName(),
+                traineeDto.getLastName(),
+                userService.generateUsername(traineeDto.getFirstName(), traineeDto.getLastName()),
+                userService.generatePassword()
         );
 
-        Trainee savedTrainee = traineeDao.saveTrainee(trainee);
+        Trainee trainee = new Trainee(
+                newUser,
+                traineeDto.getDateOfBirth(),
+                traineeDto.getAddress()
+        );
 
-        log.info("Trainee successfully created: ID={}, Username={}, Address={}",
-                savedTrainee.getUserId(), savedTrainee.getUsername(), savedTrainee.getAddress());
+        Trainee savedTrainee = traineeRepository.save(trainee);
+
+        log.info("Trainee successfully created: Username={}, ID={}, Address={}",
+                savedTrainee.getUser().getUsername(), savedTrainee.getUser().getUserId(), savedTrainee.getAddress());
 
         return savedTrainee;
     }
 
-    public Optional<Trainee> getTrainee(Long userId) {
-        log.info("Fetching trainee with ID={}", userId);
+    public Optional<Trainee> getTraineeByUsername(String username) {
+        log.info("Fetching trainee with Username={}", username);
 
-        Optional<Trainee> trainee = traineeDao.getTrainee(userId);
+        Optional<Trainee> trainee = traineeRepository.findByUsername(username);
 
-        if (trainee.isPresent()) {
-            log.info("Trainee found: ID={}, Username={}, Address={}",
-                    trainee.get().getUserId(), trainee.get().getUsername(), trainee.get().getAddress());
-        } else {
-            log.warn("No trainee found with ID={}", userId);
-        }
+        if (trainee.isPresent())
+            log.info("Trainee found: ID={}", trainee.get().getTraineeId());
+        else
+            log.warn("No trainee found with Username={}", username);
 
         return trainee;
     }
 
-    public boolean deleteTrainee(Long userId) {
-        log.info("Deleting trainee with ID={}", userId);
+    public Trainee updateTraineeProfile(TraineeUpdateDto traineeUpdateDto, String username) {
+        log.info("Updating trainee profile: Username={}", username);
 
-        boolean deleted = traineeDao.deleteTrainee(userId);
+        Trainee trainee = traineeRepository.findByUsername(username)
+                .orElseThrow(() -> new NoSuchElementException("Trainee not found with Username: " + username));
 
-        if (deleted) {
-            log.info("Trainee successfully deleted: ID={}", userId);
-        } else {
-            log.warn("Failed to delete trainee: ID {} does not exist", userId);
-        }
+        // Update only the profile related fields (we do not touch User entity)
+        if (traineeUpdateDto.getAddress() != null)
+            trainee.setAddress(traineeUpdateDto.getAddress());
+        if (traineeUpdateDto.getDateOfBirth() != null)
+            trainee.setDateOfBirth(traineeUpdateDto.getDateOfBirth());
 
-        return deleted;
-    }
-
-    public Trainee updateTrainee(Trainee trainee) {
-        log.info("Updating trainee: ID={}, Username={}, New Address={}",
-                trainee.getUserId(), trainee.getUsername(), trainee.getAddress());
-
-        Trainee updatedTrainee = traineeDao.updateTrainee(trainee);
-
-        log.info("Trainee successfully updated: ID={}, New Address={}",
-                updatedTrainee.getUserId(), updatedTrainee.getAddress());
+        Trainee updatedTrainee = traineeRepository.save(trainee);
+        log.info("Trainee updated successfully: Username={}, Address={}, Date of Birth={}",
+                updatedTrainee.getUser().getUsername(), updatedTrainee.getAddress(), updatedTrainee.getDateOfBirth());
 
         return updatedTrainee;
+    }
+
+    public void deleteTrainee(String username) {
+        log.info("Attempting to delete trainee with Username={}", username);
+
+        traineeRepository.deleteByUsername(username);
+
+        log.info("Trainee with Username={} successfully deleted", username);
     }
 }

@@ -1,73 +1,85 @@
 package io.github.rezi_gelenidze.gym_crm.service;
 
-import io.github.rezi_gelenidze.gym_crm.dao.TrainerDao;
+import io.github.rezi_gelenidze.gym_crm.dto.TrainerDto;
+import io.github.rezi_gelenidze.gym_crm.dto.TrainerUpdateDto;
 import io.github.rezi_gelenidze.gym_crm.entity.Trainer;
+import io.github.rezi_gelenidze.gym_crm.entity.TrainingType;
+import io.github.rezi_gelenidze.gym_crm.entity.User;
+import io.github.rezi_gelenidze.gym_crm.repository.TrainerRepository;
+import io.github.rezi_gelenidze.gym_crm.repository.TrainingTypeRepository;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class TrainerService {
-    private UserService userService;
-    private TrainerDao trainerDao;
+    private final UserService userService;
+    private final TrainerRepository trainerRepository;
+    private final TrainingTypeRepository trainingTypeRepository;
 
-    // Setter injections (according to task requirements)
-    @Autowired
-    public void setUserService(UserService userService) {
-        this.userService = userService;
-    }
+    public Trainer createTrainer(TrainerDto trainerDto) {
+        log.info("Creating new trainer: {} {}, Specialization={}",
+                trainerDto.getFirstName(), trainerDto.getLastName(), trainerDto.getSpecialization());
 
-    @Autowired
-    public void setTrainerDao(TrainerDao trainerDao) {
-        this.trainerDao = trainerDao;
-    }
-
-    public Trainer createTrainer(String firstName, String lastName, String specialization) {
-        log.info("Creating new trainer: {} {}, Specialization={}", firstName, lastName, specialization);
-
-        Trainer trainer = new Trainer(
-                userService.generateTrainerId(),
-                firstName,
-                lastName,
-                userService.generateUsername(firstName, lastName),
-                userService.generatePassword(),
-                specialization
+        User newUser = new User(
+                trainerDto.getFirstName(),
+                trainerDto.getLastName(),
+                userService.generateUsername(trainerDto.getFirstName(), trainerDto.getLastName()),
+                userService.generatePassword()
         );
 
-        Trainer savedTrainer = trainerDao.saveTrainer(trainer);
+        TrainingType specialization = trainingTypeRepository.findByTrainingTypeName(trainerDto.getSpecialization())
+                .orElseThrow(() -> new NoSuchElementException("Specialization not found: " + trainerDto.getSpecialization()));
+
+        Trainer trainer = new Trainer(newUser, specialization);
+
+        Trainer savedTrainer = trainerRepository.save(trainer);
 
         log.info("Trainer successfully created: ID={}, Username={}, Specialization={}",
-                savedTrainer.getUserId(), savedTrainer.getUsername(), savedTrainer.getSpecialization());
+                savedTrainer.getUser().getUserId(), savedTrainer.getUser().getUsername(), savedTrainer.getSpecialization());
 
         return savedTrainer;
     }
 
-    public Optional<Trainer> getTrainer(Long userId) {
-        log.info("Fetching trainer with ID={}", userId);
+    public Optional<Trainer> getTrainerByUsername(String username) {
+        log.info("Fetching trainee with Username={}", username);
 
-        Optional<Trainer> trainer = trainerDao.getTrainer(userId);
+        Optional<Trainer> trainer = trainerRepository.findByUsername(username);
 
-        if (trainer.isPresent()) {
-            log.info("Trainer found: ID={}, Username={}, Specialization={}",
-                    trainer.get().getUserId(), trainer.get().getUsername(), trainer.get().getSpecialization());
-        } else {
-            log.warn("No trainer found with ID={}", userId);
-        }
+        if (trainer.isPresent())
+            log.info("Trainee found: ID={}", trainer.get().getTrainerId());
+        else
+            log.warn("No trainee found with Username={}", username);
 
         return trainer;
     }
 
-    public Trainer updateTrainer(Trainer trainer) {
-        log.info("Updating trainer: ID={}, Username={}, Specialization={}",
-                trainer.getUserId(), trainer.getUsername(), trainer.getSpecialization());
+    public List<Trainer> getUnassignedTrainers(String username) {
+        return trainerRepository.findTrainersNotAssignedToTrainee(username);
+    }
 
-        Trainer updatedTrainer = trainerDao.updateTrainer(trainer);
+    public Trainer updateTrainerProfile(TrainerUpdateDto trainerUpdateDto, String username) {
+        log.info("Updating trainer profile: Username={}", username);
 
-        log.info("Trainer successfully updated: ID={}, New Specialization={}",
-                updatedTrainer.getUserId(), updatedTrainer.getSpecialization());
+        Trainer trainer = trainerRepository.findByUsername(username)
+                .orElseThrow(() -> new NoSuchElementException("Trainer not found with Username: " + username));
+
+        // Update only the profile related fields (we do not touch User entity)
+        if (trainerUpdateDto.getSpecialization() != null) {
+            TrainingType specialization = trainingTypeRepository.findByTrainingTypeName(trainerUpdateDto.getSpecialization())
+                    .orElseThrow(() -> new NoSuchElementException("Specialization not found: " + trainerUpdateDto.getSpecialization()));
+
+            trainer.setSpecialization(specialization);
+        }
+
+        Trainer updatedTrainer = trainerRepository.save(trainer);
+        log.info("Trainer updated successfully: Username={}, Specialization={}", updatedTrainer.getUser().getUsername(), updatedTrainer.getSpecialization());
 
         return updatedTrainer;
     }

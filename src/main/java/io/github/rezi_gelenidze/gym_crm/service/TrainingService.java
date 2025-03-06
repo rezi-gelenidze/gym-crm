@@ -1,54 +1,73 @@
 package io.github.rezi_gelenidze.gym_crm.service;
 
 import java.time.Duration;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
-import io.github.rezi_gelenidze.gym_crm.dao.TrainingDao;
+import io.github.rezi_gelenidze.gym_crm.dto.TrainingDto;
+import io.github.rezi_gelenidze.gym_crm.entity.Trainee;
+import io.github.rezi_gelenidze.gym_crm.entity.Trainer;
 import io.github.rezi_gelenidze.gym_crm.entity.Training;
 import io.github.rezi_gelenidze.gym_crm.entity.TrainingType;
+import io.github.rezi_gelenidze.gym_crm.repository.TraineeRepository;
+import io.github.rezi_gelenidze.gym_crm.repository.TrainerRepository;
+import io.github.rezi_gelenidze.gym_crm.repository.TrainingRepository;
+import io.github.rezi_gelenidze.gym_crm.repository.TrainingTypeRepository;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class TrainingService {
-    private TrainingDao trainingDao;
+    private final TrainerRepository trainerRepository;
+    private final TraineeRepository traineeRepository;
+    private final TrainingTypeRepository trainingTypeRepository;
+    private final TrainingRepository trainingRepository;
 
-    // Setter injections (according to task requirements)
-    @Autowired
-    public void setTrainingDao(TrainingDao trainingDao) {
-        this.trainingDao = trainingDao;
-    }
+    public Training createTraining(TrainingDto trainingDto) {
 
-    public Training createTraining(Long traineeId, Long trainerId, String trainingName, TrainingType trainingTypeName, String trainingDate, Duration trainingDuration) {
-        log.info("Creating training session: Name={}, Type={}, Date={}, Duration={} mins, TraineeID={}, TrainerID={}",
-                trainingName, trainingTypeName.getTrainingTypeName(), trainingDate, trainingDuration.toMinutes(), traineeId, trainerId);
+        Trainee trainee = traineeRepository.findById(trainingDto.getTraineeId())
+                .orElseThrow(() -> new IllegalArgumentException("Trainee not found: " + trainingDto.getTraineeId()));
 
-        Training training = new Training(traineeId, trainerId, trainingName, trainingTypeName, trainingDate, trainingDuration);
-        Training savedTraining = trainingDao.saveTraining(training);
+        Trainer trainer = trainerRepository.findById(trainingDto.getTrainerId())
+                .orElseThrow(() -> new IllegalArgumentException("Trainer not found: " + trainingDto.getTrainerId()));
 
-        log.info("Training session successfully created: ID={}, Name={}, Type={}, Date={}, Duration={} mins",
-                savedTraining.getTraineeId() + "-" + savedTraining.getTrainerId(), savedTraining.getTrainingName(),
-                savedTraining.getTrainingTypeName().getTrainingTypeName(), savedTraining.getTrainingDate(), savedTraining.getTrainingDuration().toMinutes());
+        TrainingType trainingType = trainingTypeRepository.findByTrainingTypeName(trainingDto.getTrainingTypeName())
+                .orElseThrow(() -> new NoSuchElementException("Training Type not found: " + trainingDto.getTrainingTypeName()));
+
+        Training training = new Training(
+                trainee,
+                trainer,
+                trainingType,
+                trainingDto.getTrainingName(),
+                trainingDto.getTrainingDate(),
+                trainingDto.getTrainingDuration()
+        );
+
+        Training savedTraining = trainingRepository.save(training);
+
+        // Log Success
+        log.info("Training successfully created: ID={}, Trainee={}, Trainer={}, Training Type={}, Training Name={}, Training Date={}, Training Duration={}",
+                savedTraining.getId(),
+                savedTraining.getTrainee().getUser().getUsername(),
+                savedTraining.getTrainer().getUser().getUsername(),
+                savedTraining.getTrainingType().getTrainingTypeName(),
+                savedTraining.getTrainingName(),
+                savedTraining.getTrainingDate(),
+                savedTraining.getTrainingDuration());
 
         return savedTraining;
     }
 
-    public Optional<Training> getTraining(Long traineeId, Long trainerId) {
-        log.info("Fetching training session: TraineeID={}, TrainerID={}", traineeId, trainerId);
+    public List<Training> getTraineeTrainings(String traineeUsername, LocalDate fromDate, LocalDate toDate, String trainerName, String trainingType) {
+        return trainingRepository.findTraineeTrainings(traineeUsername, fromDate, toDate, trainerName, trainingType);
+    }
 
-        Optional<Training> training = trainingDao.getTraining(traineeId, trainerId);
-
-        if (training.isPresent()) {
-            log.info("Training session found: ID={}, Name={}, Type={}, Date={}, Duration={} mins",
-                    traineeId + "-" + trainerId, training.get().getTrainingName(),
-                    training.get().getTrainingTypeName().getTrainingTypeName(), training.get().getTrainingDate(),
-                    training.get().getTrainingDuration().toMinutes());
-        } else {
-            log.warn("No training session found for TraineeID={} and TrainerID={}", traineeId, trainerId);
-        }
-
-        return training;
+    public List<Training> getTrainerTrainings(String trainerUsername, LocalDate fromDate, LocalDate toDate, String traineeName) {
+        return trainingRepository.findTrainerTrainings(trainerUsername, fromDate, toDate, traineeName);
     }
 }

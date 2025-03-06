@@ -1,65 +1,48 @@
 package io.github.rezi_gelenidze.gym_crm.service;
 
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicLong;
 import java.security.SecureRandom;
 
-import io.github.rezi_gelenidze.gym_crm.entity.Trainee;
-import io.github.rezi_gelenidze.gym_crm.entity.Trainer;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
+import io.github.rezi_gelenidze.gym_crm.dto.CredentialsDto;
+import io.github.rezi_gelenidze.gym_crm.entity.User;
+import io.github.rezi_gelenidze.gym_crm.repository.UserRepository;
+
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class UserService {
-    private PasswordEncoder passwordEncoder;
-
-    private Map<Long, Trainer> trainerStorage;
-    private Map<Long, Trainee> traineeStorage;
-
-    // Class level attributes for generation
-    private final AtomicLong traineeIdCounter = new AtomicLong(1);
-    private final AtomicLong trainerIdCounter = new AtomicLong(1);
+    private final PasswordEncoder passwordEncoder;
+    private final UserRepository userRepository;
 
     private final SecureRandom random = new SecureRandom();
 
-    // Setter injections (according to task requirements)
-    @Autowired
-    public void setPasswordEncoder(PasswordEncoder passwordEncoder) {
-        this.passwordEncoder = passwordEncoder;
+    // Authentication assertion, raises exception if authentication fails
+    public void authenticate(CredentialsDto credentials) {
+        User user = userRepository.findByUsername(credentials.getUsername())
+                .orElseThrow(() -> new IllegalArgumentException("User not found: " + credentials.getUsername()));
+
+        if (!passwordEncoder.matches(credentials.getPassword(), user.getPassword()))
+            throw new IllegalArgumentException("Invalid password");
     }
 
-    @Autowired
-    public void setTrainerStorage(Map<Long, Trainer> trainerStorage) {
-        this.trainerStorage = trainerStorage;
+    public void updatePassword(String username, String newPassword) {
+        userRepository.findByUsername(username).ifPresent(user -> {
+            user.setPassword(passwordEncoder.encode(newPassword));
+            userRepository.save(user);
+        });
     }
 
-    @Autowired
-    public void setTraineeStorage(Map<Long, Trainee> traineeStorage) {
-        this.traineeStorage = traineeStorage;
-    }
-
-    // Utility methods
-    public long generateTraineeId() {
-        long id = this.traineeIdCounter.getAndIncrement();
-        log.info("Generated new Trainee ID: {}", id);
-        return id;
-    }
-
-    public long generateTrainerId() {
-        long id = this.trainerIdCounter.getAndIncrement();
-        log.info("Generated new Trainer ID: {}", id);
-        return id;
-    }
-
-    public boolean isUsernameTaken(String username) {
-        boolean taken = this.traineeStorage.values().stream().anyMatch(t -> t.getUsername().equals(username))
-                || this.trainerStorage.values().stream().anyMatch(t -> t.getUsername().equals(username));
-
-        log.debug("Checked if username '{}' is taken: {}", username, taken);
-        return taken;
+    public void updateActiveStatus(String username, boolean active) {
+        userRepository.findByUsername(username).ifPresent(user -> {
+            user.setActive(active);
+            userRepository.save(user);
+        });
     }
 
     public String generateUsername(String firstName, String lastName) {
@@ -67,7 +50,7 @@ public class UserService {
         String username = base;
         int counter = 1;
 
-        while (isUsernameTaken(username)) {
+        while (userRepository.existsByUsername(username)) {
             username = base + counter;
             counter++;
         }
