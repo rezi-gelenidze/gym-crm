@@ -1,109 +1,95 @@
 package io.github.rezi_gelenidze.gym_crm.facade;
 
-import io.github.rezi_gelenidze.gym_crm.entity.Trainee;
-import io.github.rezi_gelenidze.gym_crm.entity.Trainer;
-import io.github.rezi_gelenidze.gym_crm.entity.Training;
-import io.github.rezi_gelenidze.gym_crm.entity.TrainingType;
-import io.github.rezi_gelenidze.gym_crm.service.TraineeService;
-import io.github.rezi_gelenidze.gym_crm.service.TrainerService;
-import io.github.rezi_gelenidze.gym_crm.service.TrainingService;
+import io.github.rezi_gelenidze.gym_crm.dto.*;
+import io.github.rezi_gelenidze.gym_crm.entity.*;
+import io.github.rezi_gelenidze.gym_crm.service.*;
 
-import java.time.Duration;
+import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
-@Slf4j
 @RequiredArgsConstructor
 @Component
 public class GymFacade {
     private final TraineeService traineeService;
     private final TrainerService trainerService;
+    private final UserService userService;
     private final TrainingService trainingService;
 
-    public Trainee createTrainee(String firstName, String lastName, String dateOfBirth, String address) {
-        log.info("Attempting to register new trainee: {} {}", firstName, lastName);
-        Trainee trainee = traineeService.createTrainee(firstName, lastName, dateOfBirth, address);
-        log.info("Trainee registered successfully: Username={}, ID={}", trainee.getUsername(), trainee.getUserId());
-        return trainee;
+    public Trainer createTrainer(TrainerDto trainerDto) {
+        return trainerService.createTrainer(trainerDto);
     }
 
-    public Optional<Trainee> getTrainee(Long userId) {
-        log.info("Fetching trainee with ID={}", userId);
-        Optional<Trainee> trainee = traineeService.getTrainee(userId);
-        if (trainee.isPresent()) {
-            log.info("Trainee found: Username={}", trainee.get().getUsername());
-        } else {
-            log.warn("No trainee found with ID={}", userId);
-        }
-        return trainee;
+    public Trainee createTrainee(TraineeDto traineeDto) {
+        return traineeService.createTrainee(traineeDto);
     }
 
-    public boolean deleteTrainee(Long userId) {
-        log.info("Attempting to delete trainee with ID={}", userId);
-        boolean deleted = traineeService.deleteTrainee(userId);
-        if (deleted) {
-            log.info("Trainee with ID={} successfully deleted", userId);
-        } else {
-            log.warn("Failed to delete trainee with ID={}", userId);
-        }
-        return deleted;
+    public Optional<Trainer> getTrainerByUsername(CredentialsDto credentials, String queryUsername) {
+        userService.authenticate(credentials);
+
+        return trainerService.getTrainerByUsername(queryUsername);
     }
 
-    public Trainee updateTrainee(Trainee trainee) {
-        log.info("Updating trainee: ID={}, Username={}", trainee.getUserId(), trainee.getUsername());
-        Trainee updatedTrainee = traineeService.updateTrainee(trainee);
-        log.info("Trainee updated successfully: ID={}, New Address={}", updatedTrainee.getUserId(), updatedTrainee.getAddress());
-        return updatedTrainee;
+    public Optional<Trainee> getTraineeByUsername(CredentialsDto credentials, String queryUsername) {
+        userService.authenticate(credentials);
+
+        return traineeService.getTraineeByUsername(queryUsername);
     }
 
-    public Trainer createTrainer(String firstName, String lastName, String specialization) {
-        log.info("Attempting to register new trainer: {} {}", firstName, lastName);
-        Trainer trainer = trainerService.createTrainer(firstName, lastName, specialization);
-        log.info("Trainer registered successfully: Username={}, ID={}, Specialization={}",
-                trainer.getUsername(), trainer.getUserId(), specialization);
-        return trainer;
+    public void updatePassword(CredentialsDto credentials, String newPassword) {
+        userService.authenticate(credentials);
+
+        userService.updatePassword(credentials.getUsername(), newPassword);
     }
 
-    public Optional<Trainer> getTrainer(Long userId) {
-        log.info("Fetching trainer with ID={}", userId);
-        Optional<Trainer> trainer = trainerService.getTrainer(userId);
-        if (trainer.isPresent()) {
-            log.info("Trainer found: Username={}", trainer.get().getUsername());
-        } else {
-            log.warn("No trainer found with ID={}", userId);
-        }
-        return trainer;
+    public Trainer updateTrainerProfile(CredentialsDto credentials, TrainerUpdateDto trainerUpdateDto) {
+        userService.authenticate(credentials);
+
+        return trainerService.updateTrainerProfile(trainerUpdateDto, credentials.getUsername());
     }
 
-    public Trainer updateTrainer(Trainer trainer) {
-        log.info("Updating trainer: ID={}, Username={}", trainer.getUserId(), trainer.getUsername());
-        Trainer updatedTrainer = trainerService.updateTrainer(trainer);
-        log.info("Trainer updated successfully: ID={}, New Specialization={}",
-                updatedTrainer.getUserId(), updatedTrainer.getSpecialization());
-        return updatedTrainer;
+    public Trainee updateTraineeProfile(CredentialsDto credentials, TraineeUpdateDto traineeUpdateDto) {
+        userService.authenticate(credentials);
+
+        return traineeService.updateTraineeProfile(traineeUpdateDto, credentials.getUsername());
     }
 
-    public Training createTraining(Long traineeId, Long trainerId, String trainingName, TrainingType trainingTypeName, String trainingDate, Duration trainingDuration) {
-        log.info("Scheduling training: Name={}, Type={}, Duration={} mins, TraineeID={}, TrainerID={}",
-                trainingName, trainingTypeName.getTrainingTypeName(), trainingDuration.toMinutes(), traineeId, trainerId);
-        Training training = trainingService.createTraining(traineeId, trainerId, trainingName, trainingTypeName, trainingDate, trainingDuration);
-        log.info("Training successfully scheduled: Name={}, Date={}, Duration={} mins",
-                training.getTrainingTypeName().getTrainingTypeName(), training.getTrainingDate(), training.getTrainingDuration().toMinutes());
-        return training;
+    public void updateUserActiveStatus(CredentialsDto credentials, boolean active) {
+        userService.authenticate(credentials);
+
+        userService.updateActiveStatus(credentials.getUsername(), active);
     }
 
-    public Optional<Training> getTraining(Long traineeId, Long trainerId) {
-        log.info("Fetching training session: TraineeID={}, TrainerID={}", traineeId, trainerId);
-        Optional<Training> training = trainingService.getTraining(traineeId, trainerId);
-        if (training.isPresent()) {
-            log.info("Training session found: Type={}, Date={}, Duration={} mins",
-                    training.get().getTrainingTypeName().getTrainingTypeName(), training.get().getTrainingDate(), training.get().getTrainingDuration().toMinutes());
-        } else {
-            log.warn("No training session found for TraineeID={} and TrainerID={}", traineeId, trainerId);
-        }
-        return training;
+    public void deleteTrainee(CredentialsDto credentials) {
+        userService.authenticate(credentials);
+
+        traineeService.deleteTrainee(credentials.getUsername());
+    }
+
+    public List<Training> getTraineeTrainings(CredentialsDto credentials, String traineeUsername, LocalDate fromDate, LocalDate toDate, String trainerName, String trainingType) {
+        userService.authenticate(credentials);
+
+        return trainingService.getTraineeTrainings(traineeUsername, fromDate, toDate, trainerName, trainingType);
+    }
+
+    public List<Training> getTrainerTrainings(CredentialsDto credentials, String trainerUsername, LocalDate fromDate, LocalDate toDate, String traineeName) {
+        userService.authenticate(credentials);
+
+        return trainingService.getTrainerTrainings(trainerUsername, fromDate, toDate, traineeName);
+    }
+
+    public Training addTraining(CredentialsDto credentials, TrainingDto trainingDto) {
+        userService.authenticate(credentials);
+
+        return trainingService.createTraining(trainingDto);
+    }
+
+    public List<Trainer> getUnassignedTrainers(CredentialsDto credentials, String traineeUsername) {
+        userService.authenticate(credentials);
+
+        return trainerService.getUnassignedTrainers(traineeUsername);
     }
 }
