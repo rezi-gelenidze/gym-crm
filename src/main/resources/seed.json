@@ -1,4 +1,9 @@
 {
+  "trainingTypes": [
+    "Strength Training",
+    "Cardio Fitness",
+    "Yoga"
+  ],
   "trainees": [
     {
       "firstName": "Jack",
@@ -27,20 +32,20 @@
   ],
   "trainings": [
     {
-      "traineeId": 2,
-      "trainerId": 4,
+      "traineeId": 1,
+      "trainerId": 1,
       "trainingName": "Strength Basics",
-      "trainingType": "Strength Training",
+      "trainingTypeName": "Strength Training",
       "trainingDate": "2025-03-10",
-      "trainingDurationMinutes": 60
+      "trainingDuration": 60
     },
     {
-      "traineeId": 1,
-      "trainerId": 3,
+      "traineeId": 2,
+      "trainerId": 2,
       "trainingName": "Advanced Cardio",
-      "trainingType": "Cardio Training",
+      "trainingTypeName": "Cardio Fitness",
       "trainingDate": "2025-03-15",
-      "trainingDurationMinutes": 45
+      "trainingDuration": 45
     }
   ]
 }
