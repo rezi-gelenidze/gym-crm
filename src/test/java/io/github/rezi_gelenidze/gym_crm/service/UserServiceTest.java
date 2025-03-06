@@ -1,8 +1,8 @@
 package io.github.rezi_gelenidze.gym_crm.service;
 
-import io.github.rezi_gelenidze.gym_crm.entity.Trainee;
-import io.github.rezi_gelenidze.gym_crm.entity.Trainer;
-import io.github.rezi_gelenidze.gym_crm.service.UserService;
+import io.github.rezi_gelenidze.gym_crm.dto.CredentialsDto;
+import io.github.rezi_gelenidze.gym_crm.entity.User;
+import io.github.rezi_gelenidze.gym_crm.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -10,8 +10,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -19,92 +18,129 @@ import static org.mockito.Mockito.*;
 class UserServiceTest {
 
     @Mock
-    private PasswordEncoder passwordEncoder;
+    private UserRepository userRepository;
 
-    private Map<Long, Trainer> trainerStorage;
-    private Map<Long, Trainee> traineeStorage;
+    @Mock
+    private PasswordEncoder passwordEncoder;
 
     @InjectMocks
     private UserService userService;
 
     @BeforeEach
     void setUp() {
-        // Initialize mocks
         MockitoAnnotations.openMocks(this);
-
-        this.trainerStorage = new ConcurrentHashMap<>();
-        this.traineeStorage = new ConcurrentHashMap<>();
-
-        userService = new UserService();
-        userService.setTrainerStorage(trainerStorage);
-        userService.setTraineeStorage(traineeStorage);
-        userService.setPasswordEncoder(passwordEncoder);
     }
 
     @Test
-    void generateTraineeId_ShouldReturnIncrementalIds() {
-        long id1 = userService.generateTraineeId();
-        long id2 = userService.generateTraineeId();
-        assertEquals(1L, id1);
-        assertEquals(2L, id2);
+    void authenticate_ShouldPass_WhenCredentialsAreCorrect() {
+        CredentialsDto credentials = new CredentialsDto("john.doe", "password123");
+        User user = new User();
+        user.setUsername("john.doe");
+        user.setPassword("encodedPassword");
+
+        when(userRepository.findByUsername("john.doe")).thenReturn(Optional.of(user));
+        when(passwordEncoder.matches("password123", "encodedPassword")).thenReturn(true);
+
+        assertDoesNotThrow(() -> userService.authenticate(credentials));
     }
 
     @Test
-    void generateTrainerId_ShouldReturnIncrementalIds() {
-        long id1 = userService.generateTrainerId();
-        long id2 = userService.generateTrainerId();
-        assertEquals(1L, id1);
-        assertEquals(2L, id2);
+    void authenticate_ShouldThrowException_WhenUserNotFound() {
+        CredentialsDto credentials = new CredentialsDto("unknown.user", "password");
+
+        when(userRepository.findByUsername("unknown.user")).thenReturn(Optional.empty());
+
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> userService.authenticate(credentials));
+        assertEquals("User not found: unknown.user", exception.getMessage());
     }
 
     @Test
-    void isUsernameTaken_WhenUsernameExistsInTrainees_ShouldReturnTrue() {
-        Trainee trainee = new Trainee();
-        trainee.setUsername("Alice.Johnson");
-        traineeStorage.put(1L, trainee);
+    void authenticate_ShouldThrowException_WhenPasswordIsIncorrect() {
+        CredentialsDto credentials = new CredentialsDto("john.doe", "wrongpassword");
+        User user = new User();
+        user.setUsername("john.doe");
+        user.setPassword("encodedPassword");
 
-        assertTrue(userService.isUsernameTaken("Alice.Johnson"));
+        when(userRepository.findByUsername("john.doe")).thenReturn(Optional.of(user));
+        when(passwordEncoder.matches("wrongpassword", "encodedPassword")).thenReturn(false);
+
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> userService.authenticate(credentials));
+        assertEquals("Invalid password", exception.getMessage());
     }
 
     @Test
-    void isUsernameTaken_WhenUsernameExistsInTrainers_ShouldReturnTrue() {
-        Trainer trainer = new Trainer();
-        trainer.setUsername("John.Doe");
-        trainerStorage.put(1L, trainer);
+    void updatePassword_ShouldEncodePasswordAndUpdateUser() {
+        User user = new User();
+        user.setUsername("john.doe");
+        user.setPassword("oldPassword");
 
-        assertTrue(userService.isUsernameTaken("John.Doe"));
+        when(userRepository.findByUsername("john.doe")).thenReturn(Optional.of(user));
+        when(passwordEncoder.encode("newPassword")).thenReturn("encodedNewPassword");
+
+        userService.updatePassword("john.doe", "newPassword");
+
+        assertEquals("encodedNewPassword", user.getPassword());
+        verify(userRepository, times(1)).save(user);
     }
 
     @Test
-    void isUsernameTaken_WhenUsernameDoesNotExist_ShouldReturnFalse() {
-        assertFalse(userService.isUsernameTaken("New.User"));
+    void updatePassword_ShouldDoNothing_WhenUserNotFound() {
+        when(userRepository.findByUsername("john.doe")).thenReturn(Optional.empty());
+
+        userService.updatePassword("john.doe", "newPassword");
+
+        verify(userRepository, never()).save(any(User.class));
     }
 
     @Test
-    void generateUsername_WhenUsernameIsAvailable_ShouldReturnUsername() {
-        String username = userService.generateUsername("Alice", "Johnson");
-        assertEquals("Alice.Johnson", username);
+    void updateActiveStatus_ShouldUpdateUserStatus() {
+        User user = new User();
+        user.setUsername("john.doe");
+        user.setActive(false);
+
+        when(userRepository.findByUsername("john.doe")).thenReturn(Optional.of(user));
+
+        userService.updateActiveStatus("john.doe", true);
+
+        assertTrue(user.isActive());
+        verify(userRepository, times(1)).save(user);
     }
 
     @Test
-    void generateUsername_WhenUsernameIsTaken_ShouldReturnUniqueUsername() {
-        Trainee trainee = new Trainee();
-        trainee.setUsername("Alice.Johnson");
-        traineeStorage.put(1L, trainee);
+    void updateActiveStatus_ShouldDoNothing_WhenUserNotFound() {
+        when(userRepository.findByUsername("john.doe")).thenReturn(Optional.empty());
 
-        String username = userService.generateUsername("Alice", "Johnson");
-        assertEquals("Alice.Johnson1", username);
+        userService.updateActiveStatus("john.doe", true);
+
+        verify(userRepository, never()).save(any(User.class));
+    }
+
+    @Test
+    void generateUsername_ShouldReturnAvailableUsername() {
+        when(userRepository.existsByUsername("John.Doe")).thenReturn(false);
+
+        String username = userService.generateUsername("John", "Doe");
+
+        assertEquals("John.Doe", username);
+    }
+
+    @Test
+    void generateUsername_ShouldReturnUniqueUsername_WhenNameIsTaken() {
+        when(userRepository.existsByUsername("John.Doe")).thenReturn(true);
+        when(userRepository.existsByUsername("John.Doe1")).thenReturn(false);
+
+        String username = userService.generateUsername("John", "Doe");
+
+        assertEquals("John.Doe1", username);
     }
 
     @Test
     void generatePassword_ShouldReturnEncodedPassword() {
-        // Mocking the passwordEncoder.encode method
         when(passwordEncoder.encode(anyString())).thenReturn("encodedPassword");
 
         String password = userService.generatePassword();
-        assertEquals("encodedPassword", password);
 
-        // Verifying that passwordEncoder.encode was called once
+        assertEquals("encodedPassword", password);
         verify(passwordEncoder, times(1)).encode(anyString());
     }
 }
