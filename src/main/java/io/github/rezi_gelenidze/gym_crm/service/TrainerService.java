@@ -1,7 +1,9 @@
 package io.github.rezi_gelenidze.gym_crm.service;
 
-import io.github.rezi_gelenidze.gym_crm.dto.TrainerDto;
-import io.github.rezi_gelenidze.gym_crm.dto.TrainerUpdateDto;
+import io.github.rezi_gelenidze.gym_crm.dto.trainee.TraineeListItemDto;
+import io.github.rezi_gelenidze.gym_crm.dto.trainer.TrainerCreateDto;
+import io.github.rezi_gelenidze.gym_crm.dto.trainer.TrainerListItemDto;
+import io.github.rezi_gelenidze.gym_crm.dto.trainer.TrainerProfileDto;
 import io.github.rezi_gelenidze.gym_crm.entity.Trainer;
 import io.github.rezi_gelenidze.gym_crm.entity.TrainingType;
 import io.github.rezi_gelenidze.gym_crm.entity.User;
@@ -12,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
@@ -23,64 +26,62 @@ public class TrainerService {
     private final TrainerRepository trainerRepository;
     private final TrainingTypeRepository trainingTypeRepository;
 
-    public Trainer createTrainer(TrainerDto trainerDto) {
+    public Map<String, String> createTrainer(TrainerCreateDto trainerCreateDto) {
         log.info("Creating new trainer: {} {}, Specialization={}",
-                trainerDto.getFirstName(), trainerDto.getLastName(), trainerDto.getSpecialization());
+                trainerCreateDto.getFirstName(), trainerCreateDto.getLastName(), trainerCreateDto.getSpecializationId());
+
+        // preserve raw password to return to user (as requested in requirements)
+        String rawPassword = userService.generateRawPassword();
 
         User newUser = new User(
-                trainerDto.getFirstName(),
-                trainerDto.getLastName(),
-                userService.generateUsername(trainerDto.getFirstName(), trainerDto.getLastName()),
-                userService.generatePassword()
+                trainerCreateDto.getFirstName(),
+                trainerCreateDto.getLastName(),
+                userService.generateUsername(trainerCreateDto.getFirstName(), trainerCreateDto.getLastName()),
+                userService.hashPassword(rawPassword)
         );
 
-        TrainingType specialization = trainingTypeRepository.findByTrainingTypeName(trainerDto.getSpecialization())
-                .orElseThrow(() -> new NoSuchElementException("Specialization not found: " + trainerDto.getSpecialization()));
+        System.out.println(trainingTypeRepository.findAll());
+        TrainingType trainingType = trainingTypeRepository
+                .findById(trainerCreateDto.getSpecializationId())
+                .orElseThrow(NoSuchElementException::new);
 
-        Trainer trainer = new Trainer(newUser, specialization);
+        Trainer trainer = new Trainer(newUser, trainingType);
 
         Trainer savedTrainer = trainerRepository.save(trainer);
 
         log.info("Trainer successfully created: ID={}, Username={}, Specialization={}",
                 savedTrainer.getUser().getUserId(), savedTrainer.getUser().getUsername(), savedTrainer.getSpecialization());
 
-        return savedTrainer;
+        return Map.of(
+                "username", savedTrainer.getUser().getUsername(),
+                "password", rawPassword
+        );
     }
 
-    public Optional<Trainer> getTrainerByUsername(String username) {
-        log.info("Fetching trainee with Username={}", username);
+    public Optional<TrainerProfileDto> getTrainerProfile(String username) {
+        log.info("Fetching trainer with Username={}", username);
 
-        Optional<Trainer> trainer = trainerRepository.findByUsername(username);
+        // query the trainer itself
+        Trainer trainer = trainerRepository.findByUsername(username).orElse(null);
 
-        if (trainer.isPresent())
-            log.info("Trainee found: ID={}", trainer.get().getTrainerId());
-        else
-            log.warn("No trainee found with Username={}", username);
+        if (trainer == null) return Optional.empty();
 
-        return trainer;
+        // query associated trainees
+        List<TraineeListItemDto> trainees = trainerRepository.findTrainerTrainees(username);
+
+
+        TrainerProfileDto trainerProfileDto = new TrainerProfileDto(
+                trainer.getUser().getFirstName(),
+                trainer.getUser().getLastName(),
+                trainer.getSpecialization().getTrainingTypeId(),
+                trainer.getUser().isActive(),
+                trainees
+        );
+
+        return Optional.of(trainerProfileDto);
     }
 
-    public List<Trainer> getUnassignedTrainers(String username) {
+    public List<TrainerListItemDto> getUnassignedTrainers(String username) {
         return trainerRepository.findTrainersNotAssignedToTrainee(username);
-    }
-
-    public Trainer updateTrainerProfile(TrainerUpdateDto trainerUpdateDto, String username) {
-        log.info("Updating trainer profile: Username={}", username);
-
-        Trainer trainer = trainerRepository.findByUsername(username)
-                .orElseThrow(() -> new NoSuchElementException("Trainer not found with Username: " + username));
-
-        // Update only the profile related fields (we do not touch User entity)
-        if (trainerUpdateDto.getSpecialization() != null) {
-            TrainingType specialization = trainingTypeRepository.findByTrainingTypeName(trainerUpdateDto.getSpecialization())
-                    .orElseThrow(() -> new NoSuchElementException("Specialization not found: " + trainerUpdateDto.getSpecialization()));
-
-            trainer.setSpecialization(specialization);
-        }
-
-        Trainer updatedTrainer = trainerRepository.save(trainer);
-        log.info("Trainer updated successfully: Username={}, Specialization={}", updatedTrainer.getUser().getUsername(), updatedTrainer.getSpecialization());
-
-        return updatedTrainer;
     }
 }
