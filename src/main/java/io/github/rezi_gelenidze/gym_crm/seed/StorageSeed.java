@@ -1,8 +1,8 @@
 package io.github.rezi_gelenidze.gym_crm.seed;
 
-import io.github.rezi_gelenidze.gym_crm.dto.TraineeDto;
-import io.github.rezi_gelenidze.gym_crm.dto.TrainerDto;
-import io.github.rezi_gelenidze.gym_crm.dto.TrainingDto;
+import io.github.rezi_gelenidze.gym_crm.dto.trainee.TraineeCreateDto;
+import io.github.rezi_gelenidze.gym_crm.dto.trainer.TrainerCreateDto;
+import io.github.rezi_gelenidze.gym_crm.dto.training.TrainingCreateDto;
 import io.github.rezi_gelenidze.gym_crm.entity.*;
 import io.github.rezi_gelenidze.gym_crm.repository.TrainingTypeRepository;
 import io.github.rezi_gelenidze.gym_crm.service.*;
@@ -20,8 +20,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.File;
 import java.io.IOException;
-import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Component
@@ -58,20 +58,20 @@ public class StorageSeed {
             }
 
             // Load trainees
-            for (TraineeDto traineeDto : seedData.getTrainees()) {
-                Trainee createdTrainee = traineeService.createTrainee(traineeDto);
-                log.info("Seeded Trainee: Username={}, ID={}", createdTrainee.getUser().getUsername(), createdTrainee.getTraineeId());
+            for (TraineeCreateDto traineeCreateDto : seedData.getTrainees()) {
+                Map<String, String> createdTrainee = traineeService.createTrainee(traineeCreateDto);
+                log.info("Seeded Trainee: Username={}", createdTrainee.get("username"));
             }
 
             // Load trainers
-            for (TrainerDto trainerDto : seedData.getTrainers()) {
-                Trainer createdTrainer = trainerService.createTrainer(trainerDto);
-                log.info("Seeded Trainer: Username={}, ID={}", createdTrainer.getUser().getUsername(), createdTrainer.getTrainerId());
+            for (TrainerCreateDto trainerCreateDto : seedData.getTrainers()) {
+                Map<String, String> createdTrainer = trainerService.createTrainer(trainerCreateDto);
+                log.info("Seeded Trainer: Username={}", createdTrainer.get("username"));
             }
 
             // Load trainings
-            for (TrainingDto trainingDto : seedData.getTrainings()) {
-                Training createdTraining = trainingService.createTraining(trainingDto);
+            for (TrainingCreateDto trainingCreateDto : seedData.getTrainings()) {
+                Training createdTraining = trainingService.createTraining(trainingCreateDto);
                 log.info("Seeded Training: Name={}, Type={}, TraineeID={}, TrainerID={}", createdTraining.getTrainingName(), createdTraining.getTrainingType().getTrainingTypeName(), createdTraining.getTrainee(), createdTraining.getTrainer());
             }
 
@@ -84,9 +84,9 @@ public class StorageSeed {
     // Internal class for JSON parsing
     @Getter
     private static class SeedData {
-        private List<TraineeDto> trainees;
-        private List<TrainerDto> trainers;
-        private List<TrainingDto> trainings;
+        private List<TraineeCreateDto> trainees;
+        private List<TrainerCreateDto> trainers;
+        private List<TrainingCreateDto> trainings;
         private List<String> trainingTypes;
     }
 }

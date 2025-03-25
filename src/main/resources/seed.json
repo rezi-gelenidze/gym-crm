@@ -32,16 +32,16 @@
   ],
   "trainings": [
     {
-      "traineeId": 1,
-      "trainerId": 1,
+      "traineeUsername": "Jack.Johnson",
+      "trainerUsername": "Nick.Brown",
       "trainingName": "Strength Basics",
       "trainingTypeName": "Strength Training",
       "trainingDate": "2025-03-10",
       "trainingDuration": 60
     },
     {
-      "traineeId": 2,
-      "trainerId": 2,
+      "traineeUsername": "Will.Smith",
+      "trainerUsername": "Emma.Clark",
       "trainingName": "Advanced Cardio",
       "trainingTypeName": "Cardio Fitness",
       "trainingDate": "2025-03-15",
