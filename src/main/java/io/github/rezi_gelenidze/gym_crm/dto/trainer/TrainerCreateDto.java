@@ -1,4 +1,4 @@
-package io.github.rezi_gelenidze.gym_crm.dto;
+package io.github.rezi_gelenidze.gym_crm.dto.trainer;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class TrainerDto {
+public class TrainerCreateDto {
 
     @NotBlank(message = "First name is required")
     private String firstName;
@@ -17,5 +17,5 @@ public class TrainerDto {
     private String lastName;
 
     @NotBlank(message = "Specialization is required")
-    private String specialization;
+    private Long specializationId;
 }

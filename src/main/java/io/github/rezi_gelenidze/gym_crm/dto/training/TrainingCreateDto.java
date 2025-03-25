@@ -1,4 +1,4 @@
-package io.github.rezi_gelenidze.gym_crm.dto;
+package io.github.rezi_gelenidze.gym_crm.dto.training;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -12,19 +12,16 @@ import java.time.LocalDate;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class TrainingDto {
+public class TrainingCreateDto {
 
-    @NotNull(message = "Trainee ID is required")
-    private Long traineeId;
+    @NotNull(message = "Trainee username is required")
+    private String traineeUsername;
 
-    @NotNull(message = "Trainer ID is required")
-    private Long trainerId;
+    @NotNull(message = "Trainer username is required")
+    private String trainerUsername;
 
     @NotBlank(message = "Training name is required")
     private String trainingName;
-
-    @NotBlank(message = "Training type name is required")
-    private String trainingTypeName;
 
     @NotNull(message = "Training date is required")
     private LocalDate trainingDate;

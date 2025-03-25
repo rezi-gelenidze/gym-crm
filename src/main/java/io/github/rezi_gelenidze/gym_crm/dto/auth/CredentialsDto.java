@@ -1,4 +1,4 @@
-package io.github.rezi_gelenidze.gym_crm.dto;
+package io.github.rezi_gelenidze.gym_crm.dto.auth;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
