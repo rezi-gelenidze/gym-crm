@@ -34,6 +34,13 @@
             <version>2.1.1</version>
         </dependency>
 
+        <!-- Spring Web with Boot autoconfig -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+            <version>3.2.2</version>
+        </dependency>
+
         <!-- Database support -->
         <dependency>
             <groupId>org.springframework</groupId>
@@ -106,6 +113,15 @@
             <scope>test</scope>
         </dependency>
 
+        <!-- API testing -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <version>3.2.2</version>
+            <scope>test</scope>
+        </dependency>
+
+
         <!-- Mockito for mocking in unit tests -->
         <dependency>
             <groupId>org.mockito</groupId>
@@ -146,5 +162,27 @@
             <artifactId>logback-classic</artifactId>
             <version>1.4.14</version>
         </dependency>
+
+        <!-- API Documentation -->
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+            <version>2.6.0</version>
+        </dependency>
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <compilerArgs>
+                        <arg>-parameters</arg>
+                    </compilerArgs>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
 </project>
