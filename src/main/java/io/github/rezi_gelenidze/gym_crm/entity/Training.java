@@ -2,6 +2,8 @@ package io.github.rezi_gelenidze.gym_crm.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import java.time.LocalDate;
 
@@ -16,6 +18,7 @@ public class Training {
 
     @ManyToOne
     @JoinColumn(name = "trainee_id", nullable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)  // Cascade trainee deletion
     private Trainee trainee;
 
     @ManyToOne
