@@ -1,7 +1,9 @@
 package io.github.rezi_gelenidze.gym_crm.service;
 
-import io.github.rezi_gelenidze.gym_crm.dto.CredentialsDto;
+import io.github.rezi_gelenidze.gym_crm.dto.auth.CredentialsDto;
 import io.github.rezi_gelenidze.gym_crm.entity.User;
+import io.github.rezi_gelenidze.gym_crm.exception.InvalidCredentialsException;
+import io.github.rezi_gelenidze.gym_crm.exception.UserNotFoundException;
 import io.github.rezi_gelenidze.gym_crm.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -50,8 +52,7 @@ class UserServiceTest {
 
         when(userRepository.findByUsername("unknown.user")).thenReturn(Optional.empty());
 
-        Exception exception = assertThrows(IllegalArgumentException.class, () -> userService.authenticate(credentials));
-        assertEquals("User not found: unknown.user", exception.getMessage());
+        assertThrows(UserNotFoundException.class, () -> userService.authenticate(credentials));
     }
 
     @Test
@@ -64,8 +65,7 @@ class UserServiceTest {
         when(userRepository.findByUsername("john.doe")).thenReturn(Optional.of(user));
         when(passwordEncoder.matches("wrongpassword", "encodedPassword")).thenReturn(false);
 
-        Exception exception = assertThrows(IllegalArgumentException.class, () -> userService.authenticate(credentials));
-        assertEquals("Invalid password", exception.getMessage());
+        assertThrows(InvalidCredentialsException.class, () -> userService.authenticate(credentials));
     }
 
     @Test
@@ -138,7 +138,9 @@ class UserServiceTest {
     void generatePassword_ShouldReturnEncodedPassword() {
         when(passwordEncoder.encode(anyString())).thenReturn("encodedPassword");
 
-        String password = userService.generatePassword();
+        String password = userService.hashPassword(
+                userService.generateRawPassword()
+        );
 
         assertEquals("encodedPassword", password);
         verify(passwordEncoder, times(1)).encode(anyString());

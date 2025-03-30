@@ -1,7 +1,7 @@
 package io.github.rezi_gelenidze.gym_crm.service;
 
-import io.github.rezi_gelenidze.gym_crm.dto.TraineeDto;
-import io.github.rezi_gelenidze.gym_crm.dto.TraineeUpdateDto;
+import io.github.rezi_gelenidze.gym_crm.dto.trainee.TraineeCreateDto;
+import io.github.rezi_gelenidze.gym_crm.dto.trainee.TraineeProfileDto;
 import io.github.rezi_gelenidze.gym_crm.entity.Trainee;
 import io.github.rezi_gelenidze.gym_crm.entity.User;
 import io.github.rezi_gelenidze.gym_crm.repository.TraineeRepository;
@@ -10,10 +10,9 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.springframework.cglib.core.Local;
 
 import java.time.LocalDate;
-import java.util.NoSuchElementException;
+import java.util.Map;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -37,20 +36,20 @@ class TraineeServiceTest {
 
     @Test
     void testCreateTrainee() {
-        TraineeDto traineeDto = new TraineeDto("John", "Doe", LocalDate.parse("2000-01-15"), "123 Main St");
+        TraineeCreateDto traineeCreateDto = new TraineeCreateDto("John", "Doe", LocalDate.parse("2000-01-15"), "123 Main St");
         User user = new User("John", "Doe", "John.Doe", "randomPass123");
         Trainee trainee = new Trainee(user, LocalDate.parse("2000-01-15"), "123 Main St");
 
         when(userService.generateUsername("John", "Doe")).thenReturn("John.Doe");
-        when(userService.generatePassword()).thenReturn("randomPass123");
+        when(userService.generateRawPassword()).thenReturn("randomPass123");
+        when(userService.hashPassword("randomPass123")).thenReturn("randomHash123");
         when(traineeRepository.save(any(Trainee.class))).thenReturn(trainee);
 
-        Trainee createdTrainee = traineeService.createTrainee(traineeDto);
+        Map<String, String> credentials = traineeService.createTrainee(traineeCreateDto);
 
-        assertNotNull(createdTrainee);
-        assertEquals("John.Doe", createdTrainee.getUser().getUsername());
-        assertEquals("randomPass123", createdTrainee.getUser().getPassword());
-        assertEquals("123 Main St", createdTrainee.getAddress());
+        assertNotNull(credentials);
+        assertEquals("John.Doe", credentials.get("username"));
+        assertEquals("randomPass123", credentials.get("password"));
 
         verify(traineeRepository, times(1)).save(any(Trainee.class));
     }
@@ -63,11 +62,11 @@ class TraineeServiceTest {
 
         when(traineeRepository.findByUsername(username)).thenReturn(Optional.of(trainee));
 
-        Optional<Trainee> foundTrainee = traineeService.getTraineeByUsername(username);
+        Optional<TraineeProfileDto> foundTrainee = traineeService.getTraineeProfile(username);
 
         assertTrue(foundTrainee.isPresent());
-        assertEquals("Alice", foundTrainee.get().getUser().getFirstName());
-        assertEquals("Smith", foundTrainee.get().getUser().getLastName());
+        assertEquals("Alice", foundTrainee.get().getFirstName());
+        assertEquals("Smith", foundTrainee.get().getLastName());
         assertEquals("456 Elm St", foundTrainee.get().getAddress());
 
         verify(traineeRepository, times(1)).findByUsername(username);
@@ -78,42 +77,9 @@ class TraineeServiceTest {
         String username = "unknown.user";
         when(traineeRepository.findByUsername(username)).thenReturn(Optional.empty());
 
-        Optional<Trainee> foundTrainee = traineeService.getTraineeByUsername(username);
+        Optional<TraineeProfileDto> foundTrainee = traineeService.getTraineeProfile(username);
 
         assertFalse(foundTrainee.isPresent());
-        verify(traineeRepository, times(1)).findByUsername(username);
-    }
-
-    @Test
-    void testUpdateTraineeProfile() {
-        String username = "Mark.Brown";
-        User user = new User("Mark", "Brown", username, "newPass");
-        Trainee trainee = new Trainee(user, LocalDate.parse("1998-03-10"), "789 Oak St");
-
-        TraineeUpdateDto updateDto = new TraineeUpdateDto(LocalDate.parse("1998-03-11"), "Updated Address");
-
-        when(traineeRepository.findByUsername(username)).thenReturn(Optional.of(trainee));
-        when(traineeRepository.save(any(Trainee.class))).thenReturn(trainee);
-
-        Trainee updatedTrainee = traineeService.updateTraineeProfile(updateDto, username);
-
-        assertNotNull(updatedTrainee);
-        assertEquals("Updated Address", updatedTrainee.getAddress());
-        assertEquals(LocalDate.parse("1998-03-11"), updatedTrainee.getDateOfBirth());
-
-        verify(traineeRepository, times(1)).findByUsername(username);
-        verify(traineeRepository, times(1)).save(any(Trainee.class));
-    }
-
-    @Test
-    void testUpdateTraineeProfile_NotFound() {
-        String username = "nonexistent.user";
-        TraineeUpdateDto updateDto = new TraineeUpdateDto(LocalDate.parse("1998-03-11"), "Updated Address");
-
-        when(traineeRepository.findByUsername(username)).thenReturn(Optional.empty());
-
-        assertThrows(NoSuchElementException.class, () -> traineeService.updateTraineeProfile(updateDto, username));
-
         verify(traineeRepository, times(1)).findByUsername(username);
     }
 

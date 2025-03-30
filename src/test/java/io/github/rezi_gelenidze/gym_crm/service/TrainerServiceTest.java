@@ -1,7 +1,7 @@
 package io.github.rezi_gelenidze.gym_crm.service;
 
-import io.github.rezi_gelenidze.gym_crm.dto.TrainerDto;
-import io.github.rezi_gelenidze.gym_crm.dto.TrainerUpdateDto;
+import io.github.rezi_gelenidze.gym_crm.dto.trainer.TrainerCreateDto;
+import io.github.rezi_gelenidze.gym_crm.dto.trainer.TrainerProfileDto;
 import io.github.rezi_gelenidze.gym_crm.entity.*;
 import io.github.rezi_gelenidze.gym_crm.repository.TrainerRepository;
 import io.github.rezi_gelenidze.gym_crm.repository.TrainingTypeRepository;
@@ -11,6 +11,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
@@ -38,35 +39,33 @@ class TrainerServiceTest {
 
     @Test
     void createTrainer_ShouldCreateTrainerSuccessfully() {
-        TrainerDto trainerDto = new TrainerDto("John", "Doe", "Strength Training");
 
-        User mockUser = new User("John", "Doe", "john.doe", "hashedPassword");
+        TrainerCreateDto trainerCreateDto = new TrainerCreateDto("John", "Doe", 1L);
+
         TrainingType trainingType = new TrainingType("Strength Training");
-        Trainer trainer = new Trainer(mockUser, trainingType);
 
         when(userService.generateUsername("John", "Doe")).thenReturn("john.doe");
-        when(userService.generatePassword()).thenReturn("hashedPassword");
-        when(trainingTypeRepository.findByTrainingTypeName("Strength Training")).thenReturn(Optional.of(trainingType));
+        when(userService.generateRawPassword()).thenReturn("rawPassword");
+        when(userService.hashPassword("rawPassword")).thenReturn("hashedPassword");
+        when(trainingTypeRepository.findById(1L)).thenReturn(Optional.of(trainingType));
         when(trainerRepository.save(any(Trainer.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        Trainer createdTrainer = trainerService.createTrainer(trainerDto);
+        Map<String, String> credentials = trainerService.createTrainer(trainerCreateDto);
 
-        assertNotNull(createdTrainer);
-        assertEquals("john.doe", createdTrainer.getUser().getUsername());
-        assertEquals("Strength Training", createdTrainer.getSpecialization().getTrainingTypeName());
+        assertNotNull(credentials);
+        assertEquals("john.doe", credentials.get("username"));
+        assertEquals("rawPassword", credentials.get("password"));
 
         verify(trainerRepository, times(1)).save(any(Trainer.class));
     }
 
     @Test
     void createTrainer_ShouldThrowException_WhenTrainingTypeNotFound() {
-        TrainerDto trainerDto = new TrainerDto("John", "Doe", "Nonexistent Type");
+        TrainerCreateDto trainerCreateDto = new TrainerCreateDto("John", "Doe", -1L);
 
         when(trainingTypeRepository.findByTrainingTypeName("Nonexistent Type")).thenReturn(Optional.empty());
 
-        Exception exception = assertThrows(NoSuchElementException.class, () -> trainerService.createTrainer(trainerDto));
-
-        assertEquals("Specialization not found: Nonexistent Type", exception.getMessage());
+        assertThrows(NoSuchElementException.class, () -> trainerService.createTrainer(trainerCreateDto));
     }
 
     @Test
@@ -76,10 +75,11 @@ class TrainerServiceTest {
 
         when(trainerRepository.findByUsername(username)).thenReturn(Optional.of(trainer));
 
-        Optional<Trainer> foundTrainer = trainerService.getTrainerByUsername(username);
+        Optional<TrainerProfileDto> foundTrainer = trainerService.getTrainerProfile(username);
 
         assertTrue(foundTrainer.isPresent());
-        assertEquals(username, foundTrainer.get().getUser().getUsername());
+        assertEquals("John", foundTrainer.get().getFirstName());
+        assertEquals("Doe", foundTrainer.get().getLastName());
 
         verify(trainerRepository, times(1)).findByUsername(username);
     }
@@ -89,55 +89,10 @@ class TrainerServiceTest {
         String username = "unknown.trainer";
         when(trainerRepository.findByUsername(username)).thenReturn(Optional.empty());
 
-        Optional<Trainer> foundTrainer = trainerService.getTrainerByUsername(username);
+        Optional<TrainerProfileDto> foundTrainer = trainerService.getTrainerProfile(username);
 
         assertFalse(foundTrainer.isPresent());
 
         verify(trainerRepository, times(1)).findByUsername(username);
-    }
-
-    @Test
-    void updateTrainerProfile_ShouldUpdateSpecialization() {
-        String username = "john.doe";
-        Trainer trainer = new Trainer(new User("John", "Doe", "john.doe", "password"), new TrainingType("Old Specialization"));
-        TrainerUpdateDto trainerUpdateDto = new TrainerUpdateDto("Strength Training");
-
-        TrainingType newSpecialization = new TrainingType("Strength Training");
-
-        when(trainerRepository.findByUsername(username)).thenReturn(Optional.of(trainer));
-        when(trainingTypeRepository.findByTrainingTypeName("Strength Training")).thenReturn(Optional.of(newSpecialization));
-        when(trainerRepository.save(any(Trainer.class))).thenAnswer(invocation -> invocation.getArgument(0));
-
-        Trainer updatedTrainer = trainerService.updateTrainerProfile(trainerUpdateDto, username);
-
-        assertEquals("Strength Training", updatedTrainer.getSpecialization().getTrainingTypeName());
-
-        verify(trainerRepository, times(1)).save(trainer);
-    }
-
-    @Test
-    void updateTrainerProfile_ShouldThrowException_WhenTrainerNotFound() {
-        String username = "unknown.trainer";
-        TrainerUpdateDto trainerUpdateDto = new TrainerUpdateDto("Strength Training");
-
-        when(trainerRepository.findByUsername(username)).thenReturn(Optional.empty());
-
-        Exception exception = assertThrows(NoSuchElementException.class, () -> trainerService.updateTrainerProfile(trainerUpdateDto, username));
-
-        assertEquals("Trainer not found with Username: unknown.trainer", exception.getMessage());
-    }
-
-    @Test
-    void updateTrainerProfile_ShouldThrowException_WhenTrainingTypeNotFound() {
-        String username = "john.doe";
-        Trainer trainer = new Trainer(new User("John", "Doe", "john.doe", "password"), new TrainingType("Old Specialization"));
-        TrainerUpdateDto trainerUpdateDto = new TrainerUpdateDto("Nonexistent Type");
-
-        when(trainerRepository.findByUsername(username)).thenReturn(Optional.of(trainer));
-        when(trainingTypeRepository.findByTrainingTypeName("Nonexistent Type")).thenReturn(Optional.empty());
-
-        Exception exception = assertThrows(NoSuchElementException.class, () -> trainerService.updateTrainerProfile(trainerUpdateDto, username));
-
-        assertEquals("Specialization not found: Nonexistent Type", exception.getMessage());
     }
 }

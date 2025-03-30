@@ -1,8 +1,13 @@
 package io.github.rezi_gelenidze.gym_crm.service;
 
-import io.github.rezi_gelenidze.gym_crm.dto.TrainingDto;
+import io.github.rezi_gelenidze.gym_crm.dto.training.TraineeTrainingListItemDto;
+import io.github.rezi_gelenidze.gym_crm.dto.training.TrainerTrainingListItemDto;
+import io.github.rezi_gelenidze.gym_crm.dto.training.TrainingCreateDto;
 import io.github.rezi_gelenidze.gym_crm.entity.*;
-import io.github.rezi_gelenidze.gym_crm.repository.*;
+import io.github.rezi_gelenidze.gym_crm.exception.UserNotFoundException;
+import io.github.rezi_gelenidze.gym_crm.repository.TraineeRepository;
+import io.github.rezi_gelenidze.gym_crm.repository.TrainerRepository;
+import io.github.rezi_gelenidze.gym_crm.repository.TrainingRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -11,7 +16,6 @@ import org.mockito.MockitoAnnotations;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -28,9 +32,6 @@ class TrainingServiceTest {
     @Mock
     private TrainingRepository trainingRepository;
 
-    @Mock
-    private TrainingTypeRepository trainingTypeRepository;
-
     @InjectMocks
     private TrainingService trainingService;
 
@@ -41,27 +42,27 @@ class TrainingServiceTest {
 
     @Test
     void createTraining_ShouldCreateAndReturnTraining() {
-        TrainingDto trainingDto = new TrainingDto(
-                1L, 2L, "Strength Training", "Strength", LocalDate.of(2025, 3, 10), 60L
+        TrainingCreateDto dto = new TrainingCreateDto(
+                "john.doe", "trainer.doe", "Strength Training",
+                LocalDate.of(2025, 3, 10), 60L
         );
 
         User traineeUser = new User("John", "Doe", "john.doe", "password123");
         User trainerUser = new User("Trainer", "Doe", "trainer.doe", "password123");
 
+        TrainingType specialization = new TrainingType("Strength");
         Trainee trainee = new Trainee(traineeUser, LocalDate.of(2000, 1, 15), "123 Main St");
-        Trainer trainer = new Trainer(trainerUser, new TrainingType("Strength"));
-        TrainingType trainingType = new TrainingType("Strength");
+        Trainer trainer = new Trainer(trainerUser, specialization);
 
-        when(traineeRepository.findById(1L)).thenReturn(Optional.of(trainee));
-        when(trainerRepository.findById(2L)).thenReturn(Optional.of(trainer));
-        when(trainingTypeRepository.findByTrainingTypeName("Strength")).thenReturn(Optional.of(trainingType));
+        when(traineeRepository.findByUsername("john.doe")).thenReturn(Optional.of(trainee));
+        when(trainerRepository.findByUsername("trainer.doe")).thenReturn(Optional.of(trainer));
         when(trainingRepository.save(any(Training.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        Training createdTraining = trainingService.createTraining(trainingDto);
+        Training createdTraining = trainingService.createTraining(dto);
 
         assertNotNull(createdTraining);
         assertEquals("Strength Training", createdTraining.getTrainingName());
-        assertEquals(trainingType, createdTraining.getTrainingType());
+        assertEquals(specialization, createdTraining.getTrainingType());
         assertEquals(LocalDate.of(2025, 3, 10), createdTraining.getTrainingDate());
         assertEquals(60L, createdTraining.getTrainingDuration());
 
@@ -70,52 +71,42 @@ class TrainingServiceTest {
 
     @Test
     void createTraining_ShouldThrowException_WhenTraineeNotFound() {
-        TrainingDto trainingDto = new TrainingDto(1L, 2L, "Yoga", "Yoga", LocalDate.now(), 45L);
+        TrainingCreateDto dto = new TrainingCreateDto("john.doe", "trainer.doe", "Yoga", LocalDate.now(), 45L);
 
-        when(traineeRepository.findById(1L)).thenReturn(Optional.empty());
+        when(traineeRepository.findByUsername("john.doe")).thenReturn(Optional.empty());
 
-        Exception exception = assertThrows(IllegalArgumentException.class, () -> trainingService.createTraining(trainingDto));
-        assertEquals("Trainee not found: 1", exception.getMessage());
+        assertThrows(UserNotFoundException.class, () -> trainingService.createTraining(dto));
     }
 
     @Test
     void createTraining_ShouldThrowException_WhenTrainerNotFound() {
-        TrainingDto trainingDto = new TrainingDto(1L, 2L, "Yoga", "Yoga", LocalDate.now(), 45L);
+        TrainingCreateDto dto = new TrainingCreateDto("john.doe", "trainer.doe", "Yoga", LocalDate.now(), 45L);
 
-        when(traineeRepository.findById(1L)).thenReturn(Optional.of(new Trainee()));
-        when(trainerRepository.findById(2L)).thenReturn(Optional.empty());
+        when(traineeRepository.findByUsername("john.doe")).thenReturn(Optional.of(new Trainee()));
+        when(trainerRepository.findByUsername("trainer.doe")).thenReturn(Optional.empty());
 
-        Exception exception = assertThrows(IllegalArgumentException.class, () -> trainingService.createTraining(trainingDto));
-        assertEquals("Trainer not found: 2", exception.getMessage());
+        assertThrows(UserNotFoundException.class, () -> trainingService.createTraining(dto));
     }
 
     @Test
-    void createTraining_ShouldThrowException_WhenTrainingTypeNotFound() {
-        TrainingDto trainingDto = new TrainingDto(1L, 2L, "Yoga", "Yoga", LocalDate.now(), 45L);
+    void getTraineeTrainings_ShouldReturnDtoList() {
+        when(trainingRepository.findTraineeTrainings(anyString(), any(), any(), any(), any()))
+                .thenReturn(List.of(new TraineeTrainingListItemDto()));
 
-        when(traineeRepository.findById(1L)).thenReturn(Optional.of(new Trainee()));
-        when(trainerRepository.findById(2L)).thenReturn(Optional.of(new Trainer()));
-        when(trainingTypeRepository.findByTrainingTypeName("Yoga")).thenReturn(Optional.empty());
-
-        Exception exception = assertThrows(NoSuchElementException.class, () -> trainingService.createTraining(trainingDto));
-        assertEquals("Training Type not found: Yoga", exception.getMessage());
-    }
-
-    @Test
-    void getTraineeTrainings_ShouldReturnTrainingList() {
-        when(trainingRepository.findTraineeTrainings(anyString(), any(), any(), any(), any())).thenReturn(List.of(new Training()));
-
-        List<Training> trainings = trainingService.getTraineeTrainings("john.doe", LocalDate.now(), LocalDate.now(), "Trainer Name", "Strength");
+        List<TraineeTrainingListItemDto> trainings = trainingService.getTraineeTrainings(
+                "john.doe", LocalDate.now(), LocalDate.now(), "trainer.doe", 1L);
 
         assertEquals(1, trainings.size());
         verify(trainingRepository, times(1)).findTraineeTrainings(anyString(), any(), any(), any(), any());
     }
 
     @Test
-    void getTrainerTrainings_ShouldReturnTrainingList() {
-        when(trainingRepository.findTrainerTrainings(anyString(), any(), any(), any())).thenReturn(List.of(new Training()));
+    void getTrainerTrainings_ShouldReturnDtoList() {
+        when(trainingRepository.findTrainerTrainings(anyString(), any(), any(), any()))
+                .thenReturn(List.of(new TrainerTrainingListItemDto()));
 
-        List<Training> trainings = trainingService.getTrainerTrainings("trainer.doe", LocalDate.now(), LocalDate.now(), "Trainee Name");
+        List<TrainerTrainingListItemDto> trainings = trainingService.getTrainerTrainings(
+                "trainer.doe", LocalDate.now(), LocalDate.now(), "john.doe");
 
         assertEquals(1, trainings.size());
         verify(trainingRepository, times(1)).findTrainerTrainings(anyString(), any(), any(), any());
