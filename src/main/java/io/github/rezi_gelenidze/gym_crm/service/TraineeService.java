@@ -2,6 +2,7 @@ package io.github.rezi_gelenidze.gym_crm.service;
 
 import io.github.rezi_gelenidze.gym_crm.dto.trainee.TraineeCreateDto;
 import io.github.rezi_gelenidze.gym_crm.dto.trainee.TraineeProfileDto;
+import io.github.rezi_gelenidze.gym_crm.dto.trainee.TraineeUpdateDto;
 import io.github.rezi_gelenidze.gym_crm.dto.trainer.TrainerListItemDto;
 import io.github.rezi_gelenidze.gym_crm.entity.Trainee;
 import io.github.rezi_gelenidze.gym_crm.entity.User;
@@ -74,6 +75,37 @@ public class TraineeService {
         );
 
         return Optional.of(traineeProfileDto);
+    }
+
+    public Optional<TraineeProfileDto> updateTraineeProfile(TraineeUpdateDto traineeUpdateDto) {
+        log.info("Updating trainee with Username={}", traineeUpdateDto.getUsername());
+
+        // query the trainee itself
+        Trainee trainee = traineeRepository.findByUsername(traineeUpdateDto.getUsername()).orElse(null);
+
+        if (trainee == null) return Optional.empty();
+
+        trainee.getUser().setUsername(traineeUpdateDto.getUsername());
+        trainee.getUser().setFirstName(traineeUpdateDto.getFirstName());
+        trainee.getUser().setLastName(traineeUpdateDto.getLastName());
+
+        if (traineeUpdateDto.getDateOfBirth() != null)
+            trainee.setDateOfBirth(traineeUpdateDto.getDateOfBirth());
+        if (traineeUpdateDto.getAddress() != null)
+            trainee.setAddress(traineeUpdateDto.getAddress());
+
+        Trainee updatedTrainee = traineeRepository.save(trainee);
+
+        log.info("Trainee with Username={} successfully updated", traineeUpdateDto.getUsername());
+
+        return Optional.of(new TraineeProfileDto(
+                updatedTrainee.getUser().getFirstName(),
+                updatedTrainee.getUser().getLastName(),
+                updatedTrainee.getDateOfBirth(),
+                updatedTrainee.getAddress(),
+                updatedTrainee.getUser().isActive(),
+                traineeRepository.findTraineeTrainers(traineeUpdateDto.getUsername())
+        ));
     }
 
     public void deleteTrainee(String username) {

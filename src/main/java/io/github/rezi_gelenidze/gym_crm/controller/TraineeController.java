@@ -2,6 +2,7 @@ package io.github.rezi_gelenidze.gym_crm.controller;
 
 import io.github.rezi_gelenidze.gym_crm.dto.trainee.TraineeCreateDto;
 import io.github.rezi_gelenidze.gym_crm.dto.trainee.TraineeProfileDto;
+import io.github.rezi_gelenidze.gym_crm.dto.trainee.TraineeUpdateDto;
 import io.github.rezi_gelenidze.gym_crm.dto.trainer.TrainerListItemDto;
 import io.github.rezi_gelenidze.gym_crm.dto.training.TraineeTrainingListItemDto;
 import io.github.rezi_gelenidze.gym_crm.service.TraineeService;
@@ -49,6 +50,22 @@ public class TraineeController {
 
         Optional<TraineeProfileDto> trainee = traineeService.getTraineeProfile(username);
         return trainee.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    @PutMapping(("/{username}"))
+    @Operation(summary = "Update trainee profile")
+    public ResponseEntity<TraineeProfileDto> updateTraineeProfile(
+            @RequestHeader("X-Username") String authUsername,
+            @RequestHeader("X-Password") String authPassword,
+            @PathVariable String username,
+            @RequestBody TraineeUpdateDto traineeUpdateDto) {
+
+        userService.authenticate(authUsername, authPassword);
+        userService.assertIdentity(authUsername, username);
+
+        Optional<TraineeProfileDto> updatedTrainee = traineeService.updateTraineeProfile(traineeUpdateDto);
+
+        return updatedTrainee.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @PatchMapping("/{username}")

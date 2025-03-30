@@ -2,6 +2,7 @@ package io.github.rezi_gelenidze.gym_crm.controller;
 
 import io.github.rezi_gelenidze.gym_crm.dto.trainer.TrainerCreateDto;
 import io.github.rezi_gelenidze.gym_crm.dto.trainer.TrainerProfileDto;
+import io.github.rezi_gelenidze.gym_crm.dto.trainer.TrainerUpdateDto;
 import io.github.rezi_gelenidze.gym_crm.dto.training.TrainerTrainingListItemDto;
 import io.github.rezi_gelenidze.gym_crm.service.TrainerService;
 import io.github.rezi_gelenidze.gym_crm.service.TrainingService;
@@ -50,6 +51,24 @@ public class TrainerController {
 
         Optional<TrainerProfileDto> trainer = trainerService.getTrainerProfile(username);
         return trainer.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    @PutMapping("/{username}")
+    @Operation(summary = "Update trainer profile")
+    public ResponseEntity<TrainerProfileDto> updateTrainerProfile(
+            @RequestHeader("X-Username") String authUsername,
+            @RequestHeader("X-Password") String authPassword,
+            @PathVariable String username,
+            @RequestBody TrainerUpdateDto trainerUpdateDto) {
+
+        userService.authenticate(authUsername, authPassword);
+        userService.assertIdentity(authUsername, username);
+
+        Optional<TrainerProfileDto> updatedTrainer = trainerService.updateTrainerProfile(trainerUpdateDto);
+
+        return updatedTrainer.map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
+
     }
 
     @PatchMapping("/{username}")
