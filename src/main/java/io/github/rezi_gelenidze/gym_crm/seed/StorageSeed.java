@@ -32,7 +32,7 @@ public class StorageSeed {
     private final TrainingService trainingService;
     private final TrainingTypeRepository trainingTypeRepository;
 
-    @Value("${seed.file.path}")
+    @Value("${app.seed.file.path}")
     private String seedFilePath;
 
     @PostConstruct
