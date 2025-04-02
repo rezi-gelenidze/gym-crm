@@ -81,4 +81,8 @@ public class UserService {
     public String hashPassword(String rawPassword) {
         return passwordEncoder.encode(rawPassword);
     }
+
+    public long countUsers() {
+        return userRepository.count();
+    }
 }
