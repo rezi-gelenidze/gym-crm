@@ -1,0 +1,5 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://aws-database-instance:5432/gym
+    username: user
+    password: SUPER_DUPER_2048_BIT_QUANTUM_ENCRYPTED_PASSWORD_STILL_PUSHED_TO_GITHUB_REPO_ON_ACCIDENT

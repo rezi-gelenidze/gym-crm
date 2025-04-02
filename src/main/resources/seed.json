@@ -22,12 +22,12 @@
     {
       "firstName": "Nick",
       "lastName": "Brown",
-      "specialization": "Strength Training"
+      "specializationId": 1
     },
     {
       "firstName": "Emma",
       "lastName": "Clark",
-      "specialization": "Cardio Fitness"
+      "specializationId": 2
     }
   ],
   "trainings": [
@@ -35,7 +35,6 @@
       "traineeUsername": "Jack.Johnson",
       "trainerUsername": "Nick.Brown",
       "trainingName": "Strength Basics",
-      "trainingTypeName": "Strength Training",
       "trainingDate": "2025-03-10",
       "trainingDuration": 60
     },
@@ -43,7 +42,6 @@
       "traineeUsername": "Will.Smith",
       "trainerUsername": "Emma.Clark",
       "trainingName": "Advanced Cardio",
-      "trainingTypeName": "Cardio Fitness",
       "trainingDate": "2025-03-15",
       "trainingDuration": 45
     }
