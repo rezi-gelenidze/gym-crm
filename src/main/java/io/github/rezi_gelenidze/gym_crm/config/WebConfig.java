@@ -1,19 +1,15 @@
 package io.github.rezi_gelenidze.gym_crm.config;
 
 import io.github.rezi_gelenidze.gym_crm.interceptor.RequestLoggingInterceptor;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
+@RequiredArgsConstructor
 public class WebConfig implements WebMvcConfigurer {
     private final RequestLoggingInterceptor requestLoggingInterceptor;
-
-    @Autowired
-    public WebConfig(RequestLoggingInterceptor requestLoggingInterceptor) {
-        this.requestLoggingInterceptor = requestLoggingInterceptor;
-    }
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
