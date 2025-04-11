@@ -2,12 +2,26 @@ package io.github.rezi_gelenidze.gym_crm.controller;
 
 import io.github.rezi_gelenidze.gym_crm.dto.auth.ChangePasswordRequestDto;
 import io.github.rezi_gelenidze.gym_crm.dto.auth.CredentialsDto;
+import io.github.rezi_gelenidze.gym_crm.dto.auth.JwtDto;
+import io.github.rezi_gelenidze.gym_crm.exception.ApiException;
+import io.github.rezi_gelenidze.gym_crm.exception.InvalidCredentialsException;
+import io.github.rezi_gelenidze.gym_crm.service.JwtService;
+import io.github.rezi_gelenidze.gym_crm.service.LoginAttemptService;
 import io.github.rezi_gelenidze.gym_crm.service.UserService;
-import jakarta.validation.Valid;
+
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.web.bind.annotation.*;
+
+import jakarta.validation.Valid;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -17,19 +31,42 @@ import lombok.RequiredArgsConstructor;
 public class AuthController {
 
     private final UserService userService;
+    private final LoginAttemptService loginAttemptService;
+    private final JwtService jwtService;
+
+    private final UserDetailsService userDetailsService;
+    private final AuthenticationManager authenticationManager;
 
     @PostMapping("/login")
     @Operation(
             summary = "User Login",
-            description = "Authenticates the user with given credentials."
+            description = "Authenticates the user and returns a JWT token."
     )
-    public ResponseEntity<Void> login(@RequestBody @Valid CredentialsDto request) {
-        userService.authenticate(request);
+    public ResponseEntity<JwtDto> login(@RequestBody @Valid CredentialsDto request) {
+        if (loginAttemptService.isBlocked(request.getUsername()))
+            // Throw ApiException with 403
+            throw new ApiException(
+                    "ATTEMPT_LIMIT_REACHED", "User is temporarily blocked due to multiple failed login attempts", HttpStatus.FORBIDDEN
+            );
 
-        // Endpoint is redundant, but we will add token auth
-        // in Security Chapter later I hope :)
-        return ResponseEntity.ok().build();
+        try {
+            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
+        } catch (Exception e) {
+            // record authentication failure
+            loginAttemptService.loginFailed(request.getUsername());
+            throw new InvalidCredentialsException();
+        }
+
+        // record success
+        loginAttemptService.loginSucceeded(request.getUsername());
+
+        // Authenticate and return token
+        UserDetails user = userDetailsService.loadUserByUsername(request.getUsername());
+
+        return ResponseEntity.ok(new JwtDto(jwtService.generateToken(user)));
     }
+
+
 
     @PutMapping("/change-password")
     @Operation(
@@ -37,7 +74,6 @@ public class AuthController {
             description = "Allows the user to change their password after authentication."
     )
     public ResponseEntity<Void> changePassword(@RequestBody @Valid ChangePasswordRequestDto request) {
-        userService.authenticate(new CredentialsDto(request.getUsername(), request.getPassword()));
         userService.updatePassword(request.getUsername(), request.getNewPassword());
         return ResponseEntity.ok().build();
     }
