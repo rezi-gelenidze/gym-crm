@@ -33,3 +33,9 @@ app:
   seed:
     file:
       path: src/main/resources/seed.json
+  auth:
+    max-attempts: 3
+    block-duration-ms: 300000 # 5 minutes
+    jwt-expiration: 36000000 # 10 hours
+    jwt-secret: SECURE_2048_BIT_QUANTUM_RANDOM_SUPER_DUPER_STRONG_SECRET_KEY
+
