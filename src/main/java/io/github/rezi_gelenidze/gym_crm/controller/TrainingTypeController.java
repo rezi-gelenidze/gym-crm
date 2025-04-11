@@ -2,7 +2,6 @@ package io.github.rezi_gelenidze.gym_crm.controller;
 
 import io.github.rezi_gelenidze.gym_crm.entity.TrainingType;
 import io.github.rezi_gelenidze.gym_crm.service.TrainingTypeService;
-import io.github.rezi_gelenidze.gym_crm.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
@@ -20,16 +19,10 @@ import java.util.List;
 public class TrainingTypeController {
 
     private final TrainingTypeService trainingTypeService;
-    private final UserService userService;
 
     @GetMapping
     @Operation(summary = "Get all training types")
-    public ResponseEntity<List<TrainingType>> getAllTrainingTypes(
-            @RequestHeader("X-Username") String authUsername,
-            @RequestHeader("X-Password") String authPassword) {
-
-        userService.authenticate(authUsername, authPassword);
-
+    public ResponseEntity<List<TrainingType>> getAllTrainingTypes() {
         return ResponseEntity.ok(trainingTypeService.getAllTrainingTypes());
     }
 }

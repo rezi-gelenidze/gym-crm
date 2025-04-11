@@ -41,13 +41,7 @@ public class TraineeController {
     @GetMapping("/{username}")
     @Operation(summary = "Get trainee profile")
     public ResponseEntity<TraineeProfileDto> getTraineeProfile(
-            @RequestHeader("X-Username") String authUsername,
-            @RequestHeader("X-Password") String authPassword,
             @PathVariable String username) {
-
-        userService.authenticate(authUsername, authPassword);
-        userService.assertIdentity(authUsername, username);
-
         Optional<TraineeProfileDto> trainee = traineeService.getTraineeProfile(username);
         return trainee.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
@@ -55,13 +49,8 @@ public class TraineeController {
     @PutMapping(("/{username}"))
     @Operation(summary = "Update trainee profile")
     public ResponseEntity<TraineeProfileDto> updateTraineeProfile(
-            @RequestHeader("X-Username") String authUsername,
-            @RequestHeader("X-Password") String authPassword,
             @PathVariable String username,
             @RequestBody TraineeUpdateDto traineeUpdateDto) {
-
-        userService.authenticate(authUsername, authPassword);
-        userService.assertIdentity(authUsername, username);
 
         Optional<TraineeProfileDto> updatedTrainee = traineeService.updateTraineeProfile(traineeUpdateDto);
 
@@ -71,14 +60,8 @@ public class TraineeController {
     @PatchMapping("/{username}")
     @Operation(summary = "Activate or Deactivate a trainee")
     public ResponseEntity<Void> activateDeactivateTrainee(
-            @RequestHeader("X-Username") String authUsername,
-            @RequestHeader("X-Password") String authPassword,
             @PathVariable String username,
             @RequestParam boolean isActive) {
-
-        userService.authenticate(authUsername, authPassword);
-        userService.assertIdentity(authUsername, username);
-
         userService.updateActiveStatus(username, isActive);
         return ResponseEntity.ok().build();
     }
@@ -86,13 +69,7 @@ public class TraineeController {
     @DeleteMapping("/{username}")
     @Operation(summary = "Delete trainee profile")
     public ResponseEntity<Void> deleteTrainee(
-            @RequestHeader("X-Username") String authUsername,
-            @RequestHeader("X-Password") String authPassword,
             @PathVariable String username) {
-
-        userService.authenticate(authUsername, authPassword);
-        userService.assertIdentity(authUsername, username);
-
         traineeService.deleteTrainee(username);
         return ResponseEntity.ok().build();
     }
@@ -100,16 +77,11 @@ public class TraineeController {
     @GetMapping("/{username}/trainings")
     @Operation(summary = "Get trainee's trainings list")
     public ResponseEntity<List<TraineeTrainingListItemDto>> getTraineeTrainings(
-            @RequestHeader("X-Username") String authUsername,
-            @RequestHeader("X-Password") String authPassword,
             @PathVariable String username,
             @RequestParam(required = false) LocalDate from,
             @RequestParam(required = false) LocalDate to,
             @RequestParam(required = false) String trainerName,
             @RequestParam(required = false) Long trainingTypeId) {
-
-        userService.authenticate(authUsername, authPassword);
-        userService.assertIdentity(authUsername, username);
 
         return ResponseEntity.ok(trainingService.getTraineeTrainings(username, from, to, trainerName, trainingTypeId));
     }
@@ -117,13 +89,7 @@ public class TraineeController {
     @GetMapping("/{username}/unassigned-trainers")
     @Operation(summary = "Get non-assigned active trainers for a trainee")
     public ResponseEntity<List<TrainerListItemDto>> getNotAssignedTrainers(
-            @RequestHeader("X-Username") String authUsername,
-            @RequestHeader("X-Password") String authPassword,
             @PathVariable String username) {
-
-        userService.authenticate(authUsername, authPassword);
-        userService.assertIdentity(authUsername, username);
-
         return ResponseEntity.ok(trainerService.getUnassignedTrainers(username));
     }
 }

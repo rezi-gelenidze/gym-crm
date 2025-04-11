@@ -42,13 +42,7 @@ public class TrainerController {
     @GetMapping("/{username}")
     @Operation(summary = "Get trainer profile")
     public ResponseEntity<TrainerProfileDto> getTrainerProfile(
-            @RequestHeader("X-Username") String authUsername,
-            @RequestHeader("X-Password") String authPassword,
             @PathVariable String username) {
-
-        userService.authenticate(authUsername, authPassword);
-        userService.assertIdentity(authUsername, username);
-
         Optional<TrainerProfileDto> trainer = trainerService.getTrainerProfile(username);
         return trainer.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
@@ -56,13 +50,8 @@ public class TrainerController {
     @PutMapping("/{username}")
     @Operation(summary = "Update trainer profile")
     public ResponseEntity<TrainerProfileDto> updateTrainerProfile(
-            @RequestHeader("X-Username") String authUsername,
-            @RequestHeader("X-Password") String authPassword,
             @PathVariable String username,
             @RequestBody TrainerUpdateDto trainerUpdateDto) {
-
-        userService.authenticate(authUsername, authPassword);
-        userService.assertIdentity(authUsername, username);
 
         Optional<TrainerProfileDto> updatedTrainer = trainerService.updateTrainerProfile(trainerUpdateDto);
 
@@ -74,13 +63,8 @@ public class TrainerController {
     @PatchMapping("/{username}")
     @Operation(summary = "Activate or Deactivate a trainer")
     public ResponseEntity<Void> activateDeactivateTrainer(
-            @RequestHeader("X-Username") String authUsername,
-            @RequestHeader("X-Password") String authPassword,
             @PathVariable String username,
             @RequestParam boolean isActive) {
-
-        userService.authenticate(authUsername, authPassword);
-        userService.assertIdentity(authUsername, username);
 
         userService.updateActiveStatus(username, isActive);
         return ResponseEntity.ok().build();
@@ -89,16 +73,10 @@ public class TrainerController {
     @GetMapping("/{username}/trainings")
     @Operation(summary = "Get trainer's training list")
     public ResponseEntity<List<TrainerTrainingListItemDto>> getTrainerTrainings(
-            @RequestHeader("X-Username") String authUsername,
-            @RequestHeader("X-Password") String authPassword,
             @PathVariable String username,
             @RequestParam(required = false) LocalDate from,
             @RequestParam(required = false) LocalDate to,
             @RequestParam(required = false) String traineeName) {
-
-        userService.authenticate(authUsername, authPassword);
-        userService.assertIdentity(authUsername, username);
-
         return ResponseEntity.ok(trainingService.getTrainerTrainings(username, from, to, traineeName));
     }
 }
