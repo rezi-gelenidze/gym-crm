@@ -10,6 +10,11 @@ spring:
       host: ${REDIS_HOST}
       port: ${REDIS_PORT}
 
+  activemq:
+    broker-url: ${SPRING_ACTIVEMQ_BROKER_URL}
+    user: ${SPRING_ACTIVEMQ_USER}
+    password: ${SPRING_ACTIVEMQ_PASSWORD}
+
 eureka:
   client:
     service-url:

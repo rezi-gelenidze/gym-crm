@@ -1,10 +1,16 @@
 package io.github.rezi_gelenidze.gym_crm.workload_service.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.io.Serializable;
 import java.time.LocalDate;
 
 @Data
-public class TrainerWorkloadRequest {
+@AllArgsConstructor
+@NoArgsConstructor
+public class TrainerWorkloadRequest implements Serializable {
     private String username;
     private String firstName;
     private String lastName;
