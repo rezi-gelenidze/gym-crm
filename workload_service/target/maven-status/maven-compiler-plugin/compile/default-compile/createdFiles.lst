@@ -1,8 +1,0 @@
-io/github/rezi_gelenidze/gym_crm/workload_service/dto/TrainerWorkloadResponse.class
-io/github/rezi_gelenidze/gym_crm/workload_service/config/RedisConfig.class
-io/github/rezi_gelenidze/gym_crm/workload_service/dto/TrainerWorkloadResponse$MonthlyWorkload.class
-io/github/rezi_gelenidze/gym_crm/workload_service/dto/TrainerWorkloadRequest.class
-io/github/rezi_gelenidze/gym_crm/workload_service/controller/TrainerWorkloadController.class
-io/github/rezi_gelenidze/gym_crm/workload_service/dto/TrainerWorkloadResponse$YearlyWorkload.class
-io/github/rezi_gelenidze/gym_crm/workload_service/service/TrainerWorkloadService.class
-io/github/rezi_gelenidze/gym_crm/workload_service/WorkloadServiceApplication.class

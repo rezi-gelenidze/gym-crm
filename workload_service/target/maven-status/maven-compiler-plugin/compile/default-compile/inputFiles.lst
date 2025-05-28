@@ -1,6 +1,0 @@
-/home/rezi-gelenidze/IdeaProjects/gym-crm/workload_service/src/main/java/io/github/rezi_gelenidze/gym_crm/workload_service/WorkloadServiceApplication.java
-/home/rezi-gelenidze/IdeaProjects/gym-crm/workload_service/src/main/java/io/github/rezi_gelenidze/gym_crm/workload_service/config/RedisConfig.java
-/home/rezi-gelenidze/IdeaProjects/gym-crm/workload_service/src/main/java/io/github/rezi_gelenidze/gym_crm/workload_service/controller/TrainerWorkloadController.java
-/home/rezi-gelenidze/IdeaProjects/gym-crm/workload_service/src/main/java/io/github/rezi_gelenidze/gym_crm/workload_service/dto/TrainerWorkloadRequest.java
-/home/rezi-gelenidze/IdeaProjects/gym-crm/workload_service/src/main/java/io/github/rezi_gelenidze/gym_crm/workload_service/dto/TrainerWorkloadResponse.java
-/home/rezi-gelenidze/IdeaProjects/gym-crm/workload_service/src/main/java/io/github/rezi_gelenidze/gym_crm/workload_service/service/TrainerWorkloadService.java
