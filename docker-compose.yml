@@ -19,6 +19,18 @@ services:
     networks:
       - backend
 
+  activemq:
+    image: rmohr/activemq
+    container_name: activemq
+    environment:
+      ACTIVEMQ_USER: ${SPRING_ACTIVEMQ_USER}
+      ACTIVEMQ_PASSWORD: ${SPRING_ACTIVEMQ_PASSWORD}
+    ports:
+      - "8161:8161"  # Web console
+      - "61616:61616" # JMS
+    networks:
+      - backend
+
   discovery-service:
     build: ./discovery_service
     container_name: discovery-service
