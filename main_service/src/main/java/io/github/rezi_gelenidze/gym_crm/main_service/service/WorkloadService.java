@@ -1,0 +1,47 @@
+package io.github.rezi_gelenidze.gym_crm.main_service.service;
+
+
+import io.github.rezi_gelenidze.gym_crm.main_service.dto.trainer.TrainerWorkloadRequest;
+import io.github.rezi_gelenidze.gym_crm.main_service.entity.Training;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.retry.annotation.Retry;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.reactive.function.client.WebClient;
+
+
+@Slf4j
+@Service
+@RequiredArgsConstructor
+public class WorkloadService {
+
+    private final WebClient.Builder webClientBuilder;
+
+    @CircuitBreaker(name = "workloadService", fallbackMethod = "fallbackNotifyWorkload")
+    @Retry(name = "workloadService")
+    public void notifyWorkloadService(Training training, String actionType) {
+        var request = new TrainerWorkloadRequest(
+                training.getTrainer().getUser().getUsername(),
+                training.getTrainer().getUser().getFirstName(),
+                training.getTrainer().getUser().getLastName(),
+                training.getTrainer().getUser().isActive(),
+                training.getTrainingDate(),
+                training.getTrainingDuration(),
+                actionType
+        );
+
+        webClientBuilder.build()
+                .post()
+                .uri("http://workload-service/workloads")
+                .bodyValue(request)
+                .retrieve()
+                .toBodilessEntity()
+                .block(); // synchronous
+    }
+
+    public void fallbackNotifyWorkload(Training training, String actionType, Throwable t) {
+        log.error("Failed to notify workload-service for {}: {}",
+                training.getTrainingName(), t.getMessage());
+    }
+}
