@@ -4,19 +4,18 @@ package io.github.rezi_gelenidze.gym_crm.main_service.service;
 import io.github.rezi_gelenidze.gym_crm.main_service.dto.trainer.TrainerWorkloadRequest;
 import io.github.rezi_gelenidze.gym_crm.main_service.entity.Training;
 import lombok.RequiredArgsConstructor;
+import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Service;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.retry.annotation.Retry;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.reactive.function.client.WebClient;
 
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class WorkloadService {
-
-    private final WebClient.Builder webClientBuilder;
+    private final JmsTemplate jmsTemplate;
 
     @CircuitBreaker(name = "workloadService", fallbackMethod = "fallbackNotifyWorkload")
     @Retry(name = "workloadService")
@@ -31,13 +30,9 @@ public class WorkloadService {
                 actionType
         );
 
-        webClientBuilder.build()
-                .post()
-                .uri("http://workload-service/workloads")
-                .bodyValue(request)
-                .retrieve()
-                .toBodilessEntity()
-                .block(); // synchronous
+        // Send the request to the workload queue
+        jmsTemplate.convertAndSend("trainer.workload.queue", request);
+        log.info("Message sent to queue: {}", request);
     }
 
     public void fallbackNotifyWorkload(Training training, String actionType, Throwable t) {
