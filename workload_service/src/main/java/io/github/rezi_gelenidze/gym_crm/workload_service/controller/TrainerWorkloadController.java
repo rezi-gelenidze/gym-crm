@@ -17,7 +17,7 @@ public class TrainerWorkloadController {
     @PostMapping
     public ResponseEntity<String> recordWorkload(@RequestBody TrainerWorkloadRequest request) {
         service.recordWorkload(request);
-        return ResponseEntity.ok("Workload recorded successfully.");
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/{username}")

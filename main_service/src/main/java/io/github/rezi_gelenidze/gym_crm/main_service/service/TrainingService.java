@@ -9,6 +9,7 @@ import io.github.rezi_gelenidze.gym_crm.main_service.dto.training.TrainingCreate
 import io.github.rezi_gelenidze.gym_crm.main_service.entity.Trainee;
 import io.github.rezi_gelenidze.gym_crm.main_service.entity.Trainer;
 import io.github.rezi_gelenidze.gym_crm.main_service.entity.Training;
+import io.github.rezi_gelenidze.gym_crm.main_service.enums.WorkloadUpdateType;
 import io.github.rezi_gelenidze.gym_crm.main_service.exception.UserNotFoundException;
 import io.github.rezi_gelenidze.gym_crm.main_service.repository.TraineeRepository;
 import io.github.rezi_gelenidze.gym_crm.main_service.repository.TrainerRepository;
@@ -46,7 +47,7 @@ public class TrainingService {
         Training savedTraining = trainingRepository.save(training);
 
         // Notify Workload Service
-        workloadService.notifyWorkloadService(savedTraining, "ADD");
+        workloadService.notifyWorkloadService(savedTraining, WorkloadUpdateType.ADD);
 
 
         // Log Success

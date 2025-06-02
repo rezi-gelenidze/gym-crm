@@ -1,5 +1,6 @@
 package io.github.rezi_gelenidze.gym_crm.workload_service.dto;
 
+import io.github.rezi_gelenidze.gym_crm.workload_service.enums.WorkloadUpdateType;
 import lombok.Data;
 import java.time.LocalDate;
 
@@ -11,5 +12,5 @@ public class TrainerWorkloadRequest {
     private boolean isActive;
     private LocalDate trainingDate;
     private Long duration;
-    private String actionType;
+    private WorkloadUpdateType actionType;
 }
