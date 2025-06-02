@@ -1,5 +1,7 @@
 package io.github.rezi_gelenidze.gym_crm.main_service.dto.trainer;
 
+import io.github.rezi_gelenidze.gym_crm.main_service.enums.WorkloadUpdateType;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -17,5 +19,5 @@ public class TrainerWorkloadRequest implements Serializable {
     private boolean isActive;
     private LocalDate trainingDate;
     private Long duration;
-    private String actionType;
+    private WorkloadUpdateType actionType;
 }

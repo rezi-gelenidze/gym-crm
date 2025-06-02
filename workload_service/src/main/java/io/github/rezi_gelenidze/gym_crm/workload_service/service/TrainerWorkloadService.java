@@ -2,6 +2,7 @@ package io.github.rezi_gelenidze.gym_crm.workload_service.service;
 
 import io.github.rezi_gelenidze.gym_crm.workload_service.dto.TrainerWorkloadRequest;
 import io.github.rezi_gelenidze.gym_crm.workload_service.dto.TrainerWorkloadResponse;
+import io.github.rezi_gelenidze.gym_crm.workload_service.enums.WorkloadUpdateType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -19,7 +20,7 @@ public class TrainerWorkloadService {
     public void recordWorkload(TrainerWorkloadRequest request) {
         // Use key for the specific trainer and date
         String key = String.format("trainer:%s:%d:%02d", request.getUsername(), request.getTrainingDate().getYear(), request.getTrainingDate().getMonthValue());
-        long delta = request.getActionType().equalsIgnoreCase("ADD") ? request.getDuration() : -request.getDuration();
+        long delta = request.getActionType().equals(WorkloadUpdateType.ADD) ? request.getDuration() : -request.getDuration();
 
         redisTemplate.opsForValue().increment(key, delta);
 
