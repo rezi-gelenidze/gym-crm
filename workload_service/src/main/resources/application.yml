@@ -6,9 +6,9 @@ spring:
     name: workload-service
 
   data:
-    redis:
-      host: ${REDIS_HOST}
-      port: ${REDIS_PORT}
+    mongodb:
+      uri: ${SPRING_DATA_MONGODB_URI}
+      auto-index-creation: true
 
   activemq:
     broker-url: ${SPRING_ACTIVEMQ_BROKER_URL}
