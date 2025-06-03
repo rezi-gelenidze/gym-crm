@@ -7,7 +7,7 @@ import java.util.List;
 
 @Data
 @AllArgsConstructor
-public class TrainerWorkloadResponse {
+public class WorkloadResponse {
     private String username;
     private String firstName;
     private String lastName;

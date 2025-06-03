@@ -11,7 +11,7 @@ import java.time.LocalDate;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class TrainerWorkloadRequest implements Serializable {
+public class WorkloadRequest implements Serializable {
     private String username;
     private String firstName;
     private String lastName;
