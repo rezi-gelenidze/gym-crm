@@ -11,11 +11,13 @@ services:
     networks:
       - backend
 
-  redis:
-    image: redis:7
-    container_name: redis
+  mongodb:
+    image: mongo:6
+    container_name: mongodb
     ports:
-      - "6379:6379"
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_DATABASE: ${MONGO_INITDB_DATABASE}
     networks:
       - backend
 
@@ -28,44 +30,6 @@ services:
     ports:
       - "8161:8161"  # Web console
       - "61616:61616" # JMS
-    networks:
-      - backend
-
-  discovery-service:
-    build: ./discovery_service
-    container_name: discovery-service
-    ports:
-      - "8761:8761"
-    networks:
-      - backend
-
-  main-service:
-    build: ./main_service
-    container_name: main-service
-    depends_on:
-      - discovery-service
-      - postgresql
-    environment:
-      EUREKA_URI: http://discovery-service:8761/eureka
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgresql:5432/${POSTGRES_DB}
-      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME}
-      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
-    ports:
-      - "8081:8081"
-    networks:
-      - backend
-
-  workload-service:
-    build: ./workload_service
-    container_name: workload-service
-    depends_on:
-      - discovery-service
-      - redis
-    environment:
-      EUREKA_URI: http://discovery-service:8761/eureka
-      SPRING_REDIS_HOST: redis
-    ports:
-      - "8082:8082"
     networks:
       - backend
 
