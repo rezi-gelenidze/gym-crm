@@ -1,0 +1,30 @@
+spring:
+  datasource:
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: true
+
+  activemq:
+    broker-url: ${SPRING_ACTIVEMQ_BROKER_URL}
+    user: ${SPRING_ACTIVEMQ_USER}
+    password: ${SPRING_ACTIVEMQ_PASSWORD}
+
+  mvc:
+    servlet:
+      path: /api/v1
+
+
+app:
+  auth:
+    jwt-secret: SECURE_2048_BIT_QUANTUM_RANDOM_SUPER_DUPER_STRONG_SECRET_KEY
+    jwt-expiration: 3600000
+
+
+# completely disable security for tests
+security:
+  disabled: true

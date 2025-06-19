@@ -1,3 +1,5 @@
+version: '3.8'
+
 services:
   postgresql:
     image: postgres:16
@@ -8,6 +10,8 @@ services:
       POSTGRES_DB: ${POSTGRES_DB}
     ports:
       - "5432:5432"
+    volumes:
+      - postgresql_data:/var/lib/postgresql/data
     networks:
       - backend
 
@@ -18,8 +22,11 @@ services:
       - "27017:27017"
     environment:
       MONGO_INITDB_DATABASE: ${MONGO_INITDB_DATABASE}
+    volumes:
+      - mongodb_data:/data/db
     networks:
       - backend
+
 
   activemq:
     image: rmohr/activemq
@@ -28,10 +35,71 @@ services:
       ACTIVEMQ_USER: ${SPRING_ACTIVEMQ_USER}
       ACTIVEMQ_PASSWORD: ${SPRING_ACTIVEMQ_PASSWORD}
     ports:
-      - "8161:8161"  # Web console
-      - "61616:61616" # JMS
+      - "8161:8161"
+      - "61616:61616"
     networks:
       - backend
+
+  discovery_service:
+    build:
+      context: ./discovery_service
+      dockerfile: Dockerfile
+    container_name: discovery_service
+    ports:
+      - "8761:8761"
+    environment:
+      EUREKA_CLIENT_REGISTER_WITH_EUREKA: "false"
+      EUREKA_CLIENT_FETCH_REGISTRY: "false"
+    networks:
+      - backend
+
+  main_service:
+    build:
+      context: ./main_service
+      dockerfile: Dockerfile
+    container_name: main_service
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgresql:5432/${POSTGRES_DB}
+      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
+      SPRING_ACTIVEMQ_BROKER_URL: tcp://activemq:61616
+      SPRING_ACTIVEMQ_USER: ${SPRING_ACTIVEMQ_USER}
+      SPRING_ACTIVEMQ_PASSWORD: ${SPRING_ACTIVEMQ_PASSWORD}
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://discovery_service:8761/eureka
+      SPRING_PROFILES_ACTIVE: docker
+    networks:
+      - backend
+    depends_on:
+      - postgresql
+      - activemq
+      - discovery_service
+
+  workload_service:
+    build:
+      context: ./workload_service
+      dockerfile: Dockerfile
+    container_name: workload_service
+    ports:
+      - "8081:8081"
+    environment:
+      SPRING_DATA_MONGODB_URI: mongodb://mongodb:27017/${MONGO_INITDB_DATABASE}
+      SPRING_ACTIVEMQ_BROKER_URL: tcp://activemq:61616
+      SPRING_ACTIVEMQ_USER: ${SPRING_ACTIVEMQ_USER}
+      SPRING_ACTIVEMQ_PASSWORD: ${SPRING_ACTIVEMQ_PASSWORD}
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://discovery_service:8761/eureka
+      SPRING_PROFILES_ACTIVE: docker
+    networks:
+      - backend
+    depends_on:
+      - mongodb
+      - activemq
+      - discovery_service
+
+volumes:
+  postgresql_data:
+  mongodb_data:
 
 networks:
   backend:

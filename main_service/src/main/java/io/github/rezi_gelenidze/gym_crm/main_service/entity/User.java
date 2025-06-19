@@ -15,7 +15,7 @@ import java.util.List;
 @Inheritance(strategy = InheritanceType.JOINED)
 @Table(name = "users")
 public class User implements UserDetails {
-    private enum Role { USER, ADMIN }
+    public enum Role { USER, ADMIN }
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
