@@ -5,8 +5,10 @@ spring:
   application:
     name: main-service
 
-  profiles:
-    active: dev
+  datasource:
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
 
   jpa:
     hibernate:
@@ -42,11 +44,10 @@ management:
 
 app:
   auth:
-    max-attempts: 3
-    block-duration-ms: 300000 # 5 minutes
-    jwt-expiration: 36000000 # 10 hours
-    jwt-secret: SECURE_2048_BIT_QUANTUM_RANDOM_SUPER_DUPER_STRONG_SECRET_KEY
-
+    max-attempts: ${AUTH_MAX_ATTEMPTS}
+    block-duration-ms: ${AUTH_BLOCK_DURATION}
+    jwt-expiration: ${AUTH_JWT_EXPIRATION}
+    jwt-secret: ${AUTH_JWT_SECRET}
 
 eureka:
   client:
